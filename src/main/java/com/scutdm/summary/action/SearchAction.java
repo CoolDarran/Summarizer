@@ -2,6 +2,11 @@ package com.scutdm.summary.action;
 
 import com.opensymphony.xwork2.ActionSupport;
 
+/**
+ * get keywords and search it
+ * @author L.danran
+ * Created on Apr 3, 2014
+ */
 public class SearchAction extends ActionSupport{
 	/**
 	 * 
@@ -25,6 +30,7 @@ public class SearchAction extends ActionSupport{
 	 */
 	public String searchWords(){
 		System.out.println(keyWords);
+		
 		return SUCCESS;
 	}
 }
