@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+	<constant name="struts.i18n.encoding" value="utf-8"></constant>
+	<constant name="struts.multipart.maxSize" value="20971520"/>
+    <constant name="struts.devMode" value="true" />
+    
+	<package name="default" namespace="/" extends="struts-default">
+	
+		<action name="">
+            <result>index.jsp</result>
+        </action>
+		
+		<action name="searchWords" class="com.scutdm.summary.action.SearchAction" method="searchWords">
+			<result name="success">
+				
+			</result>
+		</action>
+	</package>
+	
+</struts>
