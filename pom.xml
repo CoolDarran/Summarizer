@@ -60,6 +60,49 @@
       <scope>compile</scope>
     </dependency>
     
+    <!--  boilerpipe : another web crawler -->
+    <dependency>
+		<groupId>de.l3s.boilerpipe</groupId>
+		<artifactId>boilerpipe</artifactId>
+		<version>1.1.0</version>
+	</dependency>
+	
+	<!--  xerces : boilerpipe use it -->
+	<dependency>
+		<groupId>xerces</groupId>
+		<artifactId>xercesImpl</artifactId>
+		<version>2.10.0</version>
+	</dependency>
+	
+	<!--  nekohtml : boilerpipe use it -->
+	<dependency>
+		<groupId>net.sourceforge.nekohtml</groupId>
+		<artifactId>nekohtml</artifactId>
+		<version>1.9.13</version>
+	</dependency>
+            
+            
+    
+    <!--  rome : read feeds -->
+    <dependency>
+		<groupId>rome</groupId>
+		<artifactId>rome</artifactId>
+		<version>0.9</version>
+	</dependency>
+	
+	<!--  juniversalchardet : check charset encode -->
+	<dependency>
+		<groupId>com.googlecode.juniversalchardet</groupId>
+		<artifactId>juniversalchardet</artifactId>
+		<version>1.0.3</version>
+	</dependency>  
+	
+	<dependency>
+        <groupId>antlr</groupId>
+        <artifactId>antlr</artifactId>
+        <version>2.7.1</version>
+    </dependency>          
+    
   </dependencies>
   <build>
     <finalName>summary</finalName>

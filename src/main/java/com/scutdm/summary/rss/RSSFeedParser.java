@@ -4,12 +4,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Iterator;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.XMLEvent;
+
+import com.sun.syndication.feed.synd.SyndEntry;
+import com.sun.syndication.feed.synd.SyndFeed;
+import com.sun.syndication.io.FeedException;
+import com.sun.syndication.io.SyndFeedInput;
+import com.sun.syndication.io.XmlReader;
 
 /**
  * RSS reader
@@ -39,100 +46,48 @@ public class RSSFeedParser {
 	    }
 	}
 	
-	public Feed readFeed() {
+	/**
+	 * using rome to implementing parsing RSS feeds
+	 * 
+	 * @return
+	 */
+	public Feed readFeed(){
 		Feed feed = null;
-		try {
-			boolean isFeedHeader = true;
-			// Set header values intial to the empty string
-			String description = "";
-			String title = "";
-			String link = "";
-			String language = "";
-			String copyright = "";
-			String author = "";
-			String pubdate = "";
-			String guid = "";
-
-			// First create a new XMLInputFactory
-			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-			// Setup a new eventReader
-			InputStream in = read();
-			XMLEventReader eventReader = inputFactory.createXMLEventReader(in);
-			// read the XML document
-			while (eventReader.hasNext()) {
-				XMLEvent event = eventReader.nextEvent();
-				if (event.isStartElement()) {
-					String localPart = event.asStartElement().getName()
-							.getLocalPart();
-					switch (localPart) {
-					case ITEM:
-						if (isFeedHeader) {
-							isFeedHeader = false;
-							feed = new Feed(title, link, description, language,
-									copyright, pubdate);
-						}
-						event = eventReader.nextEvent();
-						break;
-					case TITLE:
-						title = getCharacterData(event, eventReader);
-						break;
-					case DESCRIPTION:
-						description = getCharacterData(event, eventReader);
-						break;
-					case LINK:
-						link = getCharacterData(event, eventReader);
-						break;
-					case GUID:
-						guid = getCharacterData(event, eventReader).split("=")[1];
-						break;
-					case LANGUAGE:
-						language = getCharacterData(event, eventReader);
-						break;
-					case AUTHOR:
-						author = getCharacterData(event, eventReader);
-						break;
-					case PUB_DATE:
-						pubdate = getCharacterData(event, eventReader);
-						break;
-					case COPYRIGHT:
-						copyright = getCharacterData(event, eventReader);
-						break;
-					}
-				} else if (event.isEndElement()) {
-					if (event.asEndElement().getName().getLocalPart() == (ITEM)) {
-						FeedMessage message = new FeedMessage();
-						message.setAuthor(author);
-						message.setDescription(description);
-						message.setGuid(guid);
-						message.setLink(link);
-						message.setTitle(title);
-						feed.getMessages().add(message);
-						event = eventReader.nextEvent();
-						continue;
-					}
-				}
+		
+		XmlReader reader = null;
+		try{
+			reader = new XmlReader(url);
+			SyndFeed feeds = new SyndFeedInput().build(reader);
+			System.out.println("Feed Title: " + feeds.getTitle());
+			
+			// feed header
+			feed = new Feed(feeds.getTitle(), feeds.getLink(), feeds.getDescription(), feeds.getLanguage(),
+					feeds.getCopyright(), feeds.getPublishedDate().toString());
+			
+			for(Iterator<?> it = feeds.getEntries().iterator(); it.hasNext();){
+				SyndEntry entry = (SyndEntry) it.next();
+				System.out.println(entry.getTitle());
+				FeedMessage message = new FeedMessage();
+				message.setAuthor(entry.getAuthor());
+				message.setDescription(entry.getDescription().toString());
+				message.setLink(entry.getUri().split(",")[1].split("=")[1]);
+				message.setTitle(entry.getTitle());
+				feed.getMessages().add(message);
 			}
-		} catch (XMLStreamException e) {
-			throw new RuntimeException(e);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (FeedException e) {
+			e.printStackTrace();
+		} finally{
+			if(reader != null)
+				try {
+					reader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 		}
 		return feed;
-	}
-
-	private String getCharacterData(XMLEvent event, XMLEventReader eventReader)
-			throws XMLStreamException {
-		String result = "";
-		event = eventReader.nextEvent();
-		if (event instanceof Characters) {
-			result = event.asCharacters().getData();
-		}
-		return result;
-	}
-
-	private InputStream read() {
-		try {
-			return url.openStream();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
 	}
 }
