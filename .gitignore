@@ -16,3 +16,14 @@ hs_err_pid*
 /target
 /test/*
 /test
+
+# result file
+*.txt
+
+# log file
+*.log
+*.log.*
+
+# frontier
+*.jdb
+je.*
