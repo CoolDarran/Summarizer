@@ -16,7 +16,7 @@
 		
 		<action name="searchWords" class="com.scutdm.summary.action.SearchAction" method="searchWords">
 			<result name="success">
-				
+				index.jsp
 			</result>
 		</action>
 	</package>

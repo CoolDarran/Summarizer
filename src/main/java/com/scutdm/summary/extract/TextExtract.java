@@ -7,8 +7,8 @@ import java.util.regex.Pattern;
 
 /**
  * <p>
- * åœ¨çº¿æ€§æ—¶é—´å†…æŠ½å–ä¸»é¢˜ç±»ï¼ˆæ–°é—»ã€åšå®¢ç­‰ï¼‰ç½‘é¡µçš„æ­£æ–‡ã€‚
- * é‡‡ç”¨äº†<b>åŸºäºè¡Œå—åˆ†å¸ƒå‡½æ•°</b>çš„æ–¹æ³•ï¼Œä¸ºä¿æŒé€šç”¨æ€§æ²¡æœ‰é’ˆå¯¹ç‰¹å®šç½‘ç«™ç¼–å†™è§„åˆ™ã€‚
+ * ÔÚÏßĞÔÊ±¼äÄÚ³éÈ¡Ö÷ÌâÀà£¨ĞÂÎÅ¡¢²©¿ÍµÈ£©ÍøÒ³µÄÕıÎÄ¡£
+ * ²ÉÓÃÁË<b>»ùÓÚĞĞ¿é·Ö²¼º¯Êı</b>µÄ·½·¨£¬Îª±£³ÖÍ¨ÓÃĞÔÃ»ÓĞÕë¶ÔÌØ¶¨ÍøÕ¾±àĞ´¹æÔò¡£
  * </p>
  * @author Chen Xin(xchen@ir.hit.edu.cn)
  * Created on 2009-1-11
@@ -31,30 +31,30 @@ public class TextExtract {
 		indexDistribution = new ArrayList<Integer>();
 		text = new StringBuilder();
 		flag = false;
-		/* å½“å¾…æŠ½å–çš„ç½‘é¡µæ­£æ–‡ä¸­é‡åˆ°æˆå—çš„æ–°é—»æ ‡é¢˜æœªå‰”é™¤æ—¶ï¼Œåªè¦å¢å¤§æ­¤é˜ˆå€¼å³å¯ã€‚*/
-		/* é˜ˆå€¼å¢å¤§ï¼Œå‡†ç¡®ç‡æå‡ï¼Œå¬å›ç‡ä¸‹é™ï¼›å€¼å˜å°ï¼Œå™ªå£°ä¼šå¤§ï¼Œä½†å¯ä»¥ä¿è¯æŠ½åˆ°åªæœ‰ä¸€å¥è¯çš„æ­£æ–‡ */
+		/* µ±´ı³éÈ¡µÄÍøÒ³ÕıÎÄÖĞÓöµ½³É¿éµÄĞÂÎÅ±êÌâÎ´ÌŞ³ıÊ±£¬Ö»ÒªÔö´ó´ËãĞÖµ¼´¿É¡£*/
+		/* ãĞÖµÔö´ó£¬×¼È·ÂÊÌáÉı£¬ÕÙ»ØÂÊÏÂ½µ£»Öµ±äĞ¡£¬ÔëÉù»á´ó£¬µ«¿ÉÒÔ±£Ö¤³éµ½Ö»ÓĞÒ»¾ä»°µÄÕıÎÄ */
 		threshold	= -1;   
 	}
 	
 
 	/**
-	 * æŠ½å–ç½‘é¡µæ­£æ–‡ï¼Œä¸åˆ¤æ–­è¯¥ç½‘é¡µæ˜¯å¦æ˜¯ç›®å½•å‹ã€‚å³å·²çŸ¥ä¼ å…¥çš„è‚¯å®šæ˜¯å¯ä»¥æŠ½å–æ­£æ–‡çš„ä¸»é¢˜ç±»ç½‘é¡µã€‚
+	 * ³éÈ¡ÍøÒ³ÕıÎÄ£¬²»ÅĞ¶Ï¸ÃÍøÒ³ÊÇ·ñÊÇÄ¿Â¼ĞÍ¡£¼´ÒÑÖª´«ÈëµÄ¿Ï¶¨ÊÇ¿ÉÒÔ³éÈ¡ÕıÎÄµÄÖ÷ÌâÀàÍøÒ³¡£
 	 * 
-	 * @param _html ç½‘é¡µHTMLå­—ç¬¦ä¸²
+	 * @param _html ÍøÒ³HTML×Ö·û´®
 	 * 
-	 * @return ç½‘é¡µæ­£æ–‡string
+	 * @return ÍøÒ³ÕıÎÄstring
 	 */
 	public String parse(String _html) {
 		return parse(_html, false);
 	}
 	
 	/**
-	 * åˆ¤æ–­ä¼ å…¥HTMLï¼Œè‹¥æ˜¯ä¸»é¢˜ç±»ç½‘é¡µï¼Œåˆ™æŠ½å–æ­£æ–‡ï¼›å¦åˆ™è¾“å‡º<b>"unkown"</b>ã€‚
+	 * ÅĞ¶Ï´«ÈëHTML£¬ÈôÊÇÖ÷ÌâÀàÍøÒ³£¬Ôò³éÈ¡ÕıÎÄ£»·ñÔòÊä³ö<b>"unkown"</b>¡£
 	 * 
-	 * @param _html ç½‘é¡µHTMLå­—ç¬¦ä¸²
-	 * @param _flag trueè¿›è¡Œä¸»é¢˜ç±»åˆ¤æ–­, çœç•¥æ­¤å‚æ•°åˆ™é»˜è®¤ä¸ºfalse
+	 * @param _html ÍøÒ³HTML×Ö·û´®
+	 * @param _flag true½øĞĞÖ÷ÌâÀàÅĞ¶Ï, Ê¡ÂÔ´Ë²ÎÊıÔòÄ¬ÈÏÎªfalse
 	 * 
-	 * @return ç½‘é¡µæ­£æ–‡string
+	 * @return ÍøÒ³ÕıÎÄstring
 	 */
 	public String parse(String _html, boolean _flag) {
 		flag = _flag;
@@ -76,7 +76,7 @@ public class TextExtract {
 		source = source.replaceAll("(?is)<style.*?>.*?</style>", "");   // remove css
 		source = source.replaceAll("&.{2,5};|&#.{2,5};", " ");			// remove special char
 		
-		//å‰”é™¤è¿ç»­æˆç‰‡çš„è¶…é“¾æ¥æ–‡æœ¬ï¼ˆè®¤ä¸ºæ˜¯ï¼Œå¹¿å‘Šæˆ–å™ªéŸ³ï¼‰,è¶…é“¾æ¥å¤šè—äºspanä¸­
+		//ÌŞ³ıÁ¬Ğø³ÉÆ¬µÄ³¬Á´½ÓÎÄ±¾£¨ÈÏÎªÊÇ£¬¹ã¸æ»òÔëÒô£©,³¬Á´½Ó¶à²ØÓÚspanÖĞ
 		source = source.replaceAll("<[sS][pP][aA][nN].*?>", "");
 		source = source.replaceAll("</[sS][pP][aA][nN]>", "");
 
@@ -89,7 +89,7 @@ public class TextExtract {
 		
 		//source = links.matcher(source).replaceAll("");
 		
-		//é˜²æ­¢htmlä¸­åœ¨<>ä¸­åŒ…æ‹¬å¤§äºå·çš„åˆ¤æ–­
+		//·ÀÖ¹htmlÖĞÔÚ<>ÖĞ°üÀ¨´óÓÚºÅµÄÅĞ¶Ï
 		source = source.replaceAll("<[^>'\"]*['\"].*['\"].*?>", "");
 
 		source = source.replaceAll("<.*?>", "");
@@ -104,7 +104,7 @@ public class TextExtract {
 		lines = Arrays.asList(html.split("\n"));
 		indexDistribution.clear();
 		
-		int empty = 0;//ç©ºè¡Œçš„æ•°é‡
+		int empty = 0;//¿ÕĞĞµÄÊıÁ¿
 		for (int i = 0; i < lines.size() - blocksWidth; i++) {
 			
 			if (lines.get(i).length() == 0)
@@ -132,7 +132,7 @@ public class TextExtract {
 		
 		start = -1; end = -1;
 		boolean boolstart = false, boolend = false;
-		boolean firstMatch = true;//å‰é¢çš„æ ‡é¢˜å—å¾€å¾€æ¯”è¾ƒå°ï¼Œåº”è¯¥å‡å°ä¸å®ƒåŒ¹é…çš„é˜ˆå€¼
+		boolean firstMatch = true;//Ç°ÃæµÄ±êÌâ¿éÍùÍù±È½ÏĞ¡£¬Ó¦¸Ã¼õĞ¡ÓëËüÆ¥ÅäµÄãĞÖµ
 		text.setLength(0);
 		
 		StringBuilder buffer = new StringBuilder();
@@ -177,7 +177,7 @@ public class TextExtract {
 				}
 				String str = buffer.toString();
 				//System.out.println(str);
-				if (str.contains("Copyright")  || str.contains("ç‰ˆæƒæ‰€æœ‰") ) continue; 
+				if (str.contains("Copyright")  || str.contains("°æÈ¨ËùÓĞ") ) continue; 
 				text.append(str);
 				boolstart = boolend = false;
 			}
@@ -193,7 +193,7 @@ public class TextExtract {
 			}
 			String str = buffer.toString();
 			//System.out.println(str);
-			if ((!str.contains("Copyright"))  || (!str.contains("ç‰ˆæƒæ‰€æœ‰")) ) 
+			if ((!str.contains("Copyright"))  || (!str.contains("°æÈ¨ËùÓĞ")) ) 
 			{	
 				text.append(str);
 			}

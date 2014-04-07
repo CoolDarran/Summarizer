@@ -22,12 +22,15 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5">
+	<classpathentry kind="lib" path="C:/Users/L.danran/Desktop/多文档自动摘要/cpdetector_1.0.10.jar"/>
+	<classpathentry kind="lib" path="/EngSummarizer/lib/edu.mit.jwi_2.3.1.jar"/>
+	<classpathentry kind="lib" path="/EngSummarizer/lib/edu.sussex.nlp.jws.beta.11.jar"/>
+	<classpathentry kind="lib" path="/EngSummarizer/lib/lingpipe-4.1.0.jar"/>
+	<classpathentry kind="lib" path="/EngSummarizer/lib/stanford-postagger.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/L.danran/Desktop/多文档自动摘要/cpdetector_1.0.10.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

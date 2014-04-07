@@ -8,12 +8,33 @@
   <name>summary Maven Webapp</name>
   <url>http://maven.apache.org</url>
   
-  <!-- 属性配置 -->  
-  <properties>  
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>  
-  </properties>
+  
+  
+  <repositories>
+  	  <!--  contain jargs-->
+      <repository>
+		<id>JBoss repository</id>
+		<url>http://repository.jboss.org/nexus/content/groups/public/</url>
+      </repository>
+      
+  </repositories>
   
   <dependencies>
+  
+  	<dependency>
+		<groupId>com.scutdm</groupId>
+		<artifactId>engsummary</artifactId>
+		<version>1.0</version>
+		<scope>compile</scope>
+	</dependency>
+	
+	<dependency>
+		<groupId>com.scutdm</groupId>
+		<artifactId>chinsummary</artifactId>
+		<version>1.0</version>
+		<scope>compile</scope>
+	</dependency>
+  
     <dependency>
 		<groupId>junit</groupId>
 		<artifactId>junit</artifactId>
@@ -34,8 +55,7 @@
 		<artifactId>log4j</artifactId>
 		<version>1.2.16</version>
 	</dependency>
-            
-    
+              
     <!--  Gson: Java to Json conversion -->
     <dependency>
       <groupId>com.google.code.gson</groupId>
@@ -67,22 +87,20 @@
 		<version>1.1.0</version>
 	</dependency>
 	
-	<!--  xerces : boilerpipe use it -->
+	<!--  xerces : boilerpipe dependency -->
 	<dependency>
 		<groupId>xerces</groupId>
 		<artifactId>xercesImpl</artifactId>
 		<version>2.10.0</version>
 	</dependency>
 	
-	<!--  nekohtml : boilerpipe use it -->
+	<!--  nekohtml : boilerpipe dependency -->
 	<dependency>
 		<groupId>net.sourceforge.nekohtml</groupId>
 		<artifactId>nekohtml</artifactId>
 		<version>1.9.13</version>
 	</dependency>
-            
-            
-    
+              
     <!--  rome : read feeds -->
     <dependency>
 		<groupId>rome</groupId>
@@ -90,21 +108,30 @@
 		<version>0.9</version>
 	</dependency>
 	
-	<!--  juniversalchardet : check charset encode -->
+	<!--  antlr : cpdetector dependency -->
 	<dependency>
-		<groupId>com.googlecode.juniversalchardet</groupId>
-		<artifactId>juniversalchardet</artifactId>
-		<version>1.0.3</version>
-	</dependency>  
+		<groupId>antlr</groupId>
+		<artifactId>antlrall</artifactId>
+		<version>2.7.4</version>
+	</dependency>
 	
+	<!--  jchardet : cpdetector dependency -->
 	<dependency>
-        <groupId>antlr</groupId>
-        <artifactId>antlr</artifactId>
-        <version>2.7.1</version>
-    </dependency>          
+      	<groupId>net.sourceforge.jchardet</groupId>
+      	<artifactId>jchardet</artifactId>
+      	<version>1.0</version>
+    </dependency>
     
+    <!--  jargs : cpdetector dependency -->
+    <dependency>
+      	<groupId>net.sf</groupId>
+      	<artifactId>jargs</artifactId>
+     	<version>1.0</version>
+    </dependency>	
+	        	
   </dependencies>
   <build>
     <finalName>summary</finalName>
   </build>
+  
 </project>

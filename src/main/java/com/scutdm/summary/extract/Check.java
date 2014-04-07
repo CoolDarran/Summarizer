@@ -1,11 +1,14 @@
 package com.scutdm.summary.extract;
 
 import info.monitorenter.cpdetector.io.ASCIIDetector;
+import info.monitorenter.cpdetector.io.ByteOrderMarkDetector;
 import info.monitorenter.cpdetector.io.CodepageDetectorProxy;
+import info.monitorenter.cpdetector.io.JChardetFacade;
 import info.monitorenter.cpdetector.io.ParsingDetector;
 import info.monitorenter.cpdetector.io.UnicodeDetector;
 
 import java.net.URL;
+import java.nio.charset.Charset;
 
 public class Check {
 	
@@ -17,20 +20,22 @@ public class Check {
 	 */
 	public static String checkCharset(URL url){
 		CodepageDetectorProxy detector = CodepageDetectorProxy.getInstance();  
-        detector.add(new ParsingDetector(false)); 
+		detector.add(JChardetFacade.getInstance());
+		detector.add(new ByteOrderMarkDetector()); 
+		detector.add(new ParsingDetector(false));   
         detector.add(ASCIIDetector.getInstance());  
         detector.add(UnicodeDetector.getInstance());  
-        java.nio.charset.Charset charset = null;  
+        Charset charset = null;  
         try {  
-            charset = detector.detectCodepage(new URL("http://money.gucheng.com/201404/2691675.shtml"));  
+            charset = detector.detectCodepage(url);  
         } catch (Exception ex) {  
             ex.printStackTrace();  
         }  
         String charsetName = null;  
-        if (charset != null) {  
-            charsetName = charset.name();  
+        if (charset != null) {
+        	charsetName = charset.name();
         } else {  
-            charsetName = "UTF-8";  
+            charsetName = "gb2312";  
         }
 		return charsetName;
 	}

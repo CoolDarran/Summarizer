@@ -21,6 +21,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.ictclas4j.utility.GFString;
+
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
 import de.l3s.boilerpipe.extractors.ArticleExtractor;
 import de.l3s.boilerpipe.extractors.DefaultExtractor;
@@ -47,12 +49,13 @@ public class ReadHTML {
     }
 	
 	/**
-	 * read html content according to the list of urls
+	 * read chinese html content according to the list of urls
+	 * ª˘”⁄––øÈ∑÷≤º
 	 * 
 	 * @param urls
 	 * @return
 	 */
-	public static List<String> readHtml(List<String> urls){		
+	public static List<String> readChinHtml(List<String> urls){		
 		
 		// set goagent proxy
 		System.setProperty("http.proxySet", "true");
@@ -68,7 +71,7 @@ public class ReadHTML {
 				// read html content
 				URL url = new URL(urlText);
 				URLConnection con = url.openConnection();
-				Pattern p = Pattern.compile("text/html;\\s+charset=([^\\s]+)\\s*");
+				Pattern p = Pattern.compile("text/html;\\s*charset=([^\\s]+)\\s*");
 				Matcher m = p.matcher(con.getContentType());
 				/* If Content-Type doesn't match this pre-conception, choose default and 
 				 * hope for the best. */
@@ -84,20 +87,15 @@ public class ReadHTML {
 					sb.append(line);
 					sb.append(System.getProperty("line.separator"));
 				}
-				htmlContents.add(sb.toString());
-				System.out.println("HTML content: " + sb.toString());				
-				
-				// use boilerplate - Shallow Text Features to extract text 
-//				htmlContents.add(processPage(urlText));
-				
-				
+				htmlContents.add(GFString.getEncodedString(sb.toString().getBytes(),"gb2312"));
+				System.out.println("HTML content: " + sb.toString());																
 				
 				// write to file
 				File file = new File(resDir + i + ".txt");
 		        //file.deleteOnExit();
 		        Writer pw = null;
 		        try {
-		            pw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
+		            pw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
 		            pw.write(sb.toString());
 		            pw.flush();
 
@@ -126,9 +124,54 @@ public class ReadHTML {
 	}
 	
 	/**
-	 *  "Boilerplate Detection using Shallow Text Features" by Christian Kohlsch√ºtter et al., presented at WSDM 2010
+	 * read html content according to the list of urls
+	 * 
+	 * @param urls
+	 * @return
+	 */
+	public static List<String> readEngHtml(List<String> urls){		
+		
+		// set goagent proxy
+		System.setProperty("http.proxySet", "true");
+		System.setProperty("http.proxyHost", "127.0.0.1");
+		System.setProperty("http.proxyPort", "8087"); 
+		
+		List<String> htmlContents = new ArrayList<String>();
+		int i = 1;
+		for(String urlText : urls){
+			// use boilerplate - Shallow Text Features to extract text 
+			String contents = processPage(urlText);
+			htmlContents.add(GFString.getEncodedString(contents.getBytes(),"UTF-8"));
+			
+			// write to file
+//			File file = new File(resDir + i + ".txt");
+//	        //file.deleteOnExit();
+//	        Writer pw = null;
+//	        try {
+//	            pw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
+//	            pw.write(contents);
+//	            pw.flush();
+//
+//	        } catch (IOException ex) {
+//	            Logger.getLogger(WriteUrl2Txt.class.getName()).log(Level.SEVERE, null, ex);
+//	        } finally {
+//	            if (pw != null) {
+//	                try {
+//						pw.close();
+//					} catch (IOException e) {
+//						e.printStackTrace();
+//					}
+//	            }
+//	        }
+//	        i++;
+		}
+		return htmlContents;
+	}
+	
+	/**
+	 *  "Boilerplate Detection using Shallow Text Features" by Christian Kohlsch®πtter et al., presented at WSDM 2010
 	 *  https://code.google.com/p/boilerpipe/
-	 *  ÊäΩÂèñÊ≠£ÊñáÊÆµ
+	 *  ≥È»°’˝Œƒ∂Œ
 	 * 
 	 * @param urlText
 	 * @return
@@ -137,14 +180,78 @@ public class ReadHTML {
 		String text = "";
 		try {
 			URL url = new URL(urlText);
-			text = DefaultExtractor.INSTANCE.getText(url);
-			System.out.println(text);
+			URLConnection con = url.openConnection();
+			// time out 1s
+			con.setConnectTimeout(1000);
+			Pattern p = Pattern.compile("text/html;\\s*charset=([^\\s]+)\\s*");
+			Matcher m = p.matcher(con.getContentType());
+			/* If Content-Type doesn't match this pre-conception, choose default and 
+			 * hope for the best. */
+			String charset = m.matches() ? m.group(1) : Check.checkCharset(url);
+			
+			System.out.println("Content type: " + con.getContentType());
+			System.out.println("Match charset: " + charset);	
+			
+			BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream(), Charset.forName(charset)));
+			
+			text = ArticleExtractor.INSTANCE.getText(in);
+			
+			System.out.println("Extracted text: " + text);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (BoilerpipeProcessingException e) {
 			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		return text;
 		
+	}
+
+	/**
+	 * read chinese html content according to the list of urls
+	 *  π”√Boilerplate
+	 * @param urls
+	 * @return
+	 */
+	public static List<String> readChinHtmlB(List<String> urls) {
+		// set goagent proxy
+		System.setProperty("http.proxySet", "true");
+		System.setProperty("http.proxyHost", "127.0.0.1");
+		System.setProperty("http.proxyPort", "8087");
+
+		List<String> htmlContents = new ArrayList<String>();
+		int i = 1;
+		for (String urlText : urls) {
+			// use boilerplate - Shallow Text Features to extract text
+			String contents = processPage(urlText);
+			htmlContents.add(GFString.getEncodedString(contents.getBytes(),
+					"gb2312"));
+
+//			// write to file
+//			File file = new File(resDir + i + ".txt");
+//			// file.deleteOnExit();
+//			Writer pw = null;
+//			try {
+//				pw = new BufferedWriter(new OutputStreamWriter(
+//						new FileOutputStream(file), "gb2312"));
+//				pw.write(contents);
+//				pw.flush();
+//
+//			} catch (IOException ex) {
+//				Logger.getLogger(WriteUrl2Txt.class.getName()).log(
+//						Level.SEVERE, null, ex);
+//			} finally {
+//				if (pw != null) {
+//					try {
+//						pw.close();
+//					} catch (IOException e) {
+//						e.printStackTrace();
+//					}
+//				}
+//			}
+//			i++;
+		}
+		return htmlContents;
 	}
 }

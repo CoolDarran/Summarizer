@@ -6,16 +6,19 @@ package com.scutdm.summary.extract;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * å°†urlçˆ¬å–çš„ç»“æœï¼Œå†™å…¥åˆ°txtæ–‡ä»¶
+ * ½«urlÅÀÈ¡µÄ½á¹û£¬Ğ´Èëµ½txtÎÄ¼ş
  *
  * @author Administrator
  */
@@ -34,15 +37,15 @@ public class WriteUrl2Txt {
         }
     }
     
-    //æŠŠurlæ­£æ–‡æå–ç»“æœå†™å…¥æ–‡æœ¬æ–‡ä»¶
+    //°ÑurlÕıÎÄÌáÈ¡½á¹ûĞ´ÈëÎÄ±¾ÎÄ¼ş
 
     public void write(String fileName, String urlResult) {
 
         File file = new File(resDir + fileName + ".txt");
         //file.deleteOnExit();
-        PrintWriter pw = null;
+        Writer pw = null;
         try {
-            pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+            pw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
             pw.write(urlResult);
             pw.flush();
 
@@ -50,7 +53,11 @@ public class WriteUrl2Txt {
             Logger.getLogger(WriteUrl2Txt.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             if (pw != null) {
-                pw.close();
+                try {
+					pw.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
             }
         }
     }
@@ -70,22 +77,22 @@ public class WriteUrl2Txt {
 
     public int readFromFile(String path) {
         if (!path.endsWith(".txt")) {
-            //åªæ”¯æŒtxtæ–‡ä»¶çš„è¯»å†™
+            //Ö»Ö§³ÖtxtÎÄ¼şµÄ¶ÁĞ´
             return UNSUPPORT_TYPE;
         }
         File file = new File(path);
 
         if (!file.exists()) {
-            //ä¸å­˜åœ¨æ­¤æ–‡ä»¶
+            //²»´æÔÚ´ËÎÄ¼ş
             return FILE_NOT_EXIT;
         }
-        //é€è¡Œè¯»è¿›url
+        //ÖğĞĞ¶Á½øurl
         return 0;
 
     }
 
     public static void main(String[] args) {
-        //æµ‹è¯•æ˜¯å¦ç”Ÿæˆå”¯ä¸€ç .
+        //²âÊÔÊÇ·ñÉú³ÉÎ¨Ò»Âë.
         String[] urls = {"http://www.sina.com.cn/", "http://www.sina.com.cn/abc.html", "http://www.sina.com.cn/abc2.html"};
         WriteUrl2Txt writer = new WriteUrl2Txt();
         for (String url : urls) {

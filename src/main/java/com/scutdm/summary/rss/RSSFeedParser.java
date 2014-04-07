@@ -38,9 +38,12 @@ public class RSSFeedParser {
 
 	final URL url;
 	
-	public RSSFeedParser(String feedKeyWords) {
+	public RSSFeedParser(boolean chinese, String feedKeyWords) {
 		try {
-			this.url = new URL("http://news.google.com/news?q=" + URLEncoder.encode(feedKeyWords, "UTF-8") +"&output=rss");
+			if(chinese)
+				this.url = new URL("http://news.google.com/news?q=" + URLEncoder.encode(feedKeyWords, "UTF-8") +"&ned=cn&hl=zh-CN&output=rss");
+			else
+				this.url = new URL("http://news.google.com/news?q=" + URLEncoder.encode(feedKeyWords, "UTF-8") +"&output=rss");
 	    } catch (Exception e) {
 	    	throw new RuntimeException(e);
 	    }

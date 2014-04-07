@@ -1,8 +1,11 @@
 package com.scutdm.summary.helper;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.scutdm.summary.action.SummaryResult;
+import com.scutdm.summary.extract.Check;
 import com.scutdm.summary.extract.ReadHTML;
 import com.scutdm.summary.extract.TextExtract;
 import com.scutdm.summary.extract.WriteUrl2Txt;
@@ -18,49 +21,99 @@ import com.scutdm.summary.rss.RSSFeedParser;
  * Created on Apr 4, 2014
  */
 public class SearchHelper {
-	private static TextExtract textExtact = new TextExtract();
 	private static WriteUrl2Txt wr2Txt = new WriteUrl2Txt();
+	private static SummarizerHelper sumHelper = new SummarizerHelper();
+	private static TextExtract txtExtract = new TextExtract();
+	private static SummaryResult sum = new SummaryResult();
 	
-	public static void searchGoogle(String keyWords) throws Exception{
+	public static SummaryResult searchGoogle(String keyWords) throws Exception{
+		
+		// set goagent proxy
+		System.setProperty("http.proxySet", "true");
+		System.setProperty("http.proxyHost", "127.0.0.1");
+		System.setProperty("http.proxyPort", "8087");
+		
+		if(Check.isChinese(keyWords)){
+			System.setProperty("file.encoding", "gb2312");
+		}else{
+			System.setProperty("file.encoding", "GBK");
+		}
+		
+		// store fetch urls
 		List<String> urls = new ArrayList<String>();
+		List<String> titleAndUrls = new ArrayList<String>();
+		// store extracted text
+		List<String> textList = new ArrayList<String>();
+		// total url size
 		int totalSize = 10;
 		
 		// get 10 news urls
-		RSSFeedParser parser = new RSSFeedParser(keyWords);
+		RSSFeedParser parser = new RSSFeedParser(Check.isChinese(keyWords),keyWords);
 		Feed feed = parser.readFeed();
 		System.out.println(feed);
-		for (FeedMessage message : feed.getMessages().subList(0, totalSize)) {
-			System.out.println(message);
-			urls.add(message.getLink());
+		for (FeedMessage message : feed.getMessages()) {
+			if(urls.indexOf("people.com.cn") == -1){
+				System.out.println(message);
+				urls.add(message.getLink());
+				titleAndUrls.add(message.getTitle() + "," + message.getLink());
+			}
+			if(urls.size() > totalSize)
+				break;
 		}		 				               
 		
-		// get the text of these 10 news urls
-		List<String> htmlContents = ReadHTML.readHtml(urls);
 		int i = 1;
 		
-		// use boilerplate - Shallow Text Features to extract text 
-//		for(String text : htmlContents){
-//			if (text != null && !text.equals("")) {
-//	        	wr2Txt.write(keyWords+i, text); //Â∞ÜÈÄªËæëÁªôÂà∞‰∫ÜIOÂ±ÇÔºÅÔºÅÔºÅ
-//	        }
-//			i++;
-//		}
-		
-
-		for(String content : htmlContents){
-			//ÂÆûÁé∞Ê≠£ÊñáÊäΩÂèñ
-	        String parseText = textExtact.parse(content);
-	        System.out.println(parseText);	
-	        if (parseText != null && !parseText.equals("")) {
-	        	wr2Txt.write(keyWords+i, parseText); //Â∞ÜÈÄªËæëÁªôÂà∞‰∫ÜIOÂ±ÇÔºÅÔºÅÔºÅ
-	        }
-	        i++;	      	        
+		List<String> htmlContents = new ArrayList<String>();
+		// get the text of these 10 news urls
+		if(Check.isChinese(keyWords)){
+			
+			System.out.println("Start extractor");
+			textList.addAll(ReadHTML.readChinHtmlB(urls));
+			System.out.println("End extractor");
+//			for(String text : textList){
+//				if (text != null && !text.equals("")) {
+//		        	wr2Txt.write(keyWords+i, text); //Ω´¬ﬂº≠∏¯µΩ¡ÀIO≤„£°£°£°
+//		        }
+//				i++;
+//			}
+			
+			// Chinese  use ª˘”⁄––øÏ∑÷≤º
+//			htmlContents = ReadHTML.readChinHtml(urls);
+//			for(String content : htmlContents){
+//				//  µœ÷’˝Œƒ≥È»°
+//		        String parseText = txtExtract.parse(content);
+//		        textList.add(parseText);//set(i-1, textList.get(i-1) + "\n" + parseText);
+//		        System.out.println("text using ––øÈ£∫ " + parseText);	
+//		        if (parseText != null && !parseText.equals("")) {
+//		        	wr2Txt.write(keyWords+i, parseText); //Ω´¬ﬂº≠∏¯µΩ¡ÀIO≤„£°£°£°
+//		        }
+//		        i++;
+//			}
+						
 		}
+		else{
+			//  use boilerplate - Shallow Text Features to extract text 
+			htmlContents = ReadHTML.readEngHtml(urls);
+			textList.addAll(htmlContents);
+//			for(String text : htmlContents){
+//				if (text != null && !text.equals("")) {
+//		        	wr2Txt.write(keyWords+i, text); //Ω´¬ﬂº≠∏¯µΩ¡ÀIO≤„£°£°£°
+//		        }
+//				i++;
+//			}
+		}
+		System.out.println("Start summary");
+		// pass extracted text to summarizer
+		String summary = sumHelper.passText(Check.isChinese(keyWords), keyWords, textList);
+		System.out.println("Summary: " + summary);
 		
+		sum.setSummary(summary);
+		sum.setKeyWords(keyWords);
+		sum.setUrls(titleAndUrls);
+		return sum;
 	}		
 	
 	public static void main(String[] argc) throws Exception{
-		searchGoogle("ÊñáÁ´† È©¨‰ºä‰øê");	
-	
+		searchGoogle("Œ“ «∏Ë ÷");	
 	}
 }

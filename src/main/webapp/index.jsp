@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <%@ page contentType="text/html; charset=UTF-8" %>
+<%@ taglib prefix="s" uri="/struts-tags" %>
 <html lang="zh-cn">
   <head>
     <title>新闻多文档摘要</title>
@@ -26,6 +27,11 @@
   
   <body>
   
+  	<s:set name="sum" value = "sum" />
+  	<s:set name="summary" value = "sum.summary" />
+  	<s:set name="keyWords" value = "sum.summary" />
+  	<s:set name="urls" value = "sum.urls" />
+  
     <!-- Wrap all page content here -->
     <div id="wrap">
 
@@ -36,7 +42,7 @@
         </div>
         
 		<form class="form-horizontal" role="form" action="searchWords">
-		
+		<s:if test="%{#sum == null}">
   		<div class="form-group"></div>
   		<div class="form-group"></div>
   		<div class="form-group"></div>
@@ -52,21 +58,52 @@
   		<div class="form-group"></div>
   		<div class="form-group"></div>
   		<div class="form-group"></div>
+  		</s:if>
   		
   		<div class="form-group">
  			<div class="col-lg-12">
     			<div class="input-group">
-    				<input type="text" class="form-control input-lg" name="keyWords">
+    				<input type="text" class="form-control input-lg" name="keyWords" value="<s:property value="keyWords"/>">
       				<span class="input-group-btn">
         				<button type="submit" class="btn btn-primary btn-lg">Search!</button>
-      				</span>
+      				</span>      				     				
     			</div><!-- /input-group -->
+    			<span class="help-block">目前摘要较慢，请耐心等候。</span>
  			</div><!-- /.col-lg-6 -->
 		</div><!-- /.row -->
 		
+		<s:if test="%{#summary !=null}">
+			<div class="form-group">
+				<div class="col-lg-12">
+					<h2>新闻摘要：</h2>
+				</div>
+				<div class="col-lg-12">
+				<s:property value="summary" />
+				</div>
+			</div>
+		</s:if>
+		<s:if test="%{#urls !=null}">
+			<div class="form-group">
+				<div class="col-lg-12">
+					<h2>新闻来源：</h2>
+				</div>
+				<div class="col-lg-12">
+				
+				<ol>
+				<s:iterator value="urls" var="urlAndTitle" status="ut">
+					<s:set name="uAndT" value='#urlAndTitle.split(",")'></s:set>
+  						<li>
+  							<h4>							
+								<a href="<s:property value="#uAndT[1]"/>" target="_blank"><s:property value="#uAndT[0]"/></a>											
+  							</h4>
+  						</li>
+				</s:iterator>
+				</ol>
+				</div>
+			</div>
+		</s:if>
 		</form>
-		
-		
+				
       </div>
     </div>
 
