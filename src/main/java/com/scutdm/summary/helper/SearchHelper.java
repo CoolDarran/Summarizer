@@ -9,6 +9,7 @@ import com.scutdm.summary.extract.ReadHTML;
 import com.scutdm.summary.rss.Feed;
 import com.scutdm.summary.rss.FeedMessage;
 import com.scutdm.summary.rss.RSSFeedParser;
+import com.scutdm.summary.utility.Utility;
 
 import edu.mit.jwi.IDictionary;
 import edu.sussex.nlp.jws.JWS;
@@ -53,8 +54,9 @@ public class SearchHelper {
 		Feed feed = parser.readFeed();
 		for (FeedMessage message : feed.getMessages()) {
 			// 去除访问不到、抽取不到正以及不能在1s内访问的网站
-			if(urls.indexOf("people.com.cn") == -1){
-				urls.add(message.getLink());
+			String url = message.getLink();
+			if(Utility.accessableUrls(url)){
+				urls.add(url);
 				titleAndUrls.add(message.getTitle() + "," + message.getLink());
 			}
 			if(urls.size() >= totalSize)
