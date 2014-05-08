@@ -1,20 +1,14 @@
 package com.scutdm.summary.extract;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,9 +17,10 @@ import java.util.regex.Pattern;
 
 import org.ictclas4j.utility.GFString;
 
+import com.wrap.chinsummarizer.preprocess.Utility;
+
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
 import de.l3s.boilerpipe.extractors.ArticleExtractor;
-import de.l3s.boilerpipe.extractors.DefaultExtractor;
 
 /**
  * read html for extracting text
@@ -35,135 +30,48 @@ import de.l3s.boilerpipe.extractors.DefaultExtractor;
  */
 public class ReadHTML {
 	
-	public static final int UNSUPPORT_TYPE = 1;
-    public static final int FILE_NOT_EXIT = 2;
-    public static String resDir;
-	
-	static {      
-        resDir = "html_result/";
-        
-        File file = new File(resDir);
-        if (!file.exists()) {
-            file.mkdirs();
-        }
-    }
-	
-	/**
-	 * read chinese html content according to the list of urls
-	 * 基于行块分布
-	 * 
-	 * @param urls
-	 * @return
-	 */
-	public static List<String> readChinHtml(List<String> urls){		
-		
-		// set goagent proxy
-		System.setProperty("http.proxySet", "true");
-		System.setProperty("http.proxyHost", "127.0.0.1");
-		System.setProperty("http.proxyPort", "8087"); 
-		
-		List<String> htmlContents = new ArrayList<String>();
-		BufferedReader in = null;
-		int i = 1;
-		for(String urlText : urls){
-			try{
-				
-				// read html content
-				URL url = new URL(urlText);
-				URLConnection con = url.openConnection();
-				Pattern p = Pattern.compile("text/html;\\s*charset=([^\\s]+)\\s*");
-				Matcher m = p.matcher(con.getContentType());
-				/* If Content-Type doesn't match this pre-conception, choose default and 
-				 * hope for the best. */
-				String charset = m.matches() ? m.group(1) : Check.checkCharset(url);
-				
-				System.out.println("Content type: " + con.getContentType());
-				System.out.println("Match charset: " + charset);	
-				
-				in = new BufferedReader(new InputStreamReader(url.openStream(), Charset.forName(charset)));
-				String line = null;
-				StringBuilder sb = new StringBuilder();
-				while((line = in.readLine())!=null){
-					sb.append(line);
-					sb.append(System.getProperty("line.separator"));
-				}
-				htmlContents.add(GFString.getEncodedString(sb.toString().getBytes(),"gb2312"));
-				System.out.println("HTML content: " + sb.toString());																
-				
-				// write to file
-				File file = new File(resDir + i + ".txt");
-		        //file.deleteOnExit();
-		        Writer pw = null;
-		        try {
-		            pw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
-		            pw.write(sb.toString());
-		            pw.flush();
-
-		        } catch (IOException ex) {
-		            Logger.getLogger(WriteUrl2Txt.class.getName()).log(Level.SEVERE, null, ex);
-		        } finally {
-		            if (pw != null) {
-		                pw.close();
-		            }
-		        }
-		        i++;
-				
-			} catch (Exception e) {
-			      e.printStackTrace();
-		    } finally {
-		      if (in != null) {
-		        try {
-		          in.close();
-		        } catch (IOException e) {
-		          e.printStackTrace();
-		        }
-		      }
-		    }
-		}
-		return htmlContents;		
-	}
+	private static List<String> htmlContents;
 	
 	/**
 	 * read html content according to the list of urls
-	 * 
+	 * 使用Boilerplate
 	 * @param urls
+	 * @param keyWords 
 	 * @return
 	 */
-	public static List<String> readEngHtml(List<String> urls){		
-		
-		// set goagent proxy
-		System.setProperty("http.proxySet", "true");
-		System.setProperty("http.proxyHost", "127.0.0.1");
-		System.setProperty("http.proxyPort", "8087"); 
-		
+	public static List<String> extractText(List<String> urls, String keyWords) {
 		List<String> htmlContents = new ArrayList<String>();
-		int i = 1;
-		for(String urlText : urls){
-			// use boilerplate - Shallow Text Features to extract text 
-			String contents = processPage(urlText);
-			htmlContents.add(GFString.getEncodedString(contents.getBytes(),"UTF-8"));
-			
-			// write to file
-//			File file = new File(resDir + i + ".txt");
-//	        //file.deleteOnExit();
-//	        Writer pw = null;
-//	        try {
-//	            pw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
-//	            pw.write(contents);
-//	            pw.flush();
-//
-//	        } catch (IOException ex) {
-//	            Logger.getLogger(WriteUrl2Txt.class.getName()).log(Level.SEVERE, null, ex);
-//	        } finally {
-//	            if (pw != null) {
-//	                try {
-//						pw.close();
-//					} catch (IOException e) {
-//						e.printStackTrace();
-//					}
-//	            }
-//	        }
-//	        i++;
+		for (String urlText : urls) {
+			// use boilerplate - Shallow Text Features to extract text
+			String contents = processPage(urlText,keyWords);
+			htmlContents.add(GFString.getEncodedString(contents.getBytes(),"gb2312"));
+		}
+		return htmlContents;
+	}
+	
+	public static List<String> pExtractText(List<String> urls, String keyWords) {
+		htmlContents = new ArrayList<String>();
+		int size = urls.size()/5;
+		synchronized(htmlContents){
+			Thread t1 = new Thread(new runExtract(urls.subList(0, size),keyWords));
+			Thread t2 = new Thread(new runExtract(urls.subList(size, 2*size),keyWords));
+			Thread t3 = new Thread(new runExtract(urls.subList(2*size, 3*size),keyWords));
+			Thread t4 = new Thread(new runExtract(urls.subList(3*size, 4*size),keyWords));
+			Thread t5 = new Thread(new runExtract(urls.subList(4*size, urls.size()),keyWords));
+			t1.start();
+			t2.start();
+			t3.start();
+			t4.start();
+			t5.start();
+			try {
+				t1.join();
+				t2.join();
+				t3.join();
+				t4.join();
+				t5.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 		return htmlContents;
 	}
@@ -174,9 +82,10 @@ public class ReadHTML {
 	 *  抽取正文段
 	 * 
 	 * @param urlText
+	 * @param keyWords 
 	 * @return
 	 */
-	public static String processPage(String urlText){
+	public static String processPage(String urlText, String keyWords){
 		String text = "";
 		try {
 			URL url = new URL(urlText);
@@ -184,13 +93,14 @@ public class ReadHTML {
 			// time out 1s
 			con.setConnectTimeout(1000);
 			Pattern p = Pattern.compile("text/html;\\s*charset=([^\\s]+)\\s*");
-			Matcher m = p.matcher(con.getContentType());
-			/* If Content-Type doesn't match this pre-conception, choose default and 
+			Matcher m;
+			if(con.getContentType()!=null)
+				m = p.matcher(con.getContentType());
+			else
+				m = p.matcher(" ");
+			/* If Content-Type doesn't match this pre-conception, choose default "gb2312" and 
 			 * hope for the best. */
 			String charset = m.matches() ? m.group(1) : Check.checkCharset(url);
-			
-			System.out.println("Content type: " + con.getContentType());
-			System.out.println("Match charset: " + charset);	
 			
 			BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream(), Charset.forName(charset)));
 			
@@ -198,60 +108,61 @@ public class ReadHTML {
 			
 			System.out.println("Extracted text: " + text);
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
+			Logger.getLogger(ReadHTML.class.getName()).log(Level.SEVERE, null, e);
+			return " ";
 		} catch (BoilerpipeProcessingException e) {
-			e.printStackTrace();
+			System.out.println("Cannot extract text!!!!! site: " + urlText);
+			Logger.getLogger(ReadHTML.class.getName()).log(Level.SEVERE, null, e);
+			return " ";
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Cannot read html !!!!! site: " + urlText);
+			Logger.getLogger(ReadHTML.class.getName()).log(Level.SEVERE, null, e);
+			return " ";
 		}
 		return text;
-		
 	}
 
 	/**
-	 * read chinese html content according to the list of urls
-	 * 使用Boilerplate
-	 * @param urls
+	 * 从文档读html源文件
+	 * 在html_src目录下
+	 * @param keyWords
 	 * @return
 	 */
-	public static List<String> readChinHtmlB(List<String> urls) {
-		// set goagent proxy
-		System.setProperty("http.proxySet", "true");
-		System.setProperty("http.proxyHost", "127.0.0.1");
-		System.setProperty("http.proxyPort", "8087");
-
-		List<String> htmlContents = new ArrayList<String>();
-		int i = 1;
-		for (String urlText : urls) {
-			// use boilerplate - Shallow Text Features to extract text
-			String contents = processPage(urlText);
-			htmlContents.add(GFString.getEncodedString(contents.getBytes(),
-					"gb2312"));
-
-//			// write to file
-//			File file = new File(resDir + i + ".txt");
-//			// file.deleteOnExit();
-//			Writer pw = null;
-//			try {
-//				pw = new BufferedWriter(new OutputStreamWriter(
-//						new FileOutputStream(file), "gb2312"));
-//				pw.write(contents);
-//				pw.flush();
-//
-//			} catch (IOException ex) {
-//				Logger.getLogger(WriteUrl2Txt.class.getName()).log(
-//						Level.SEVERE, null, ex);
-//			} finally {
-//				if (pw != null) {
-//					try {
-//						pw.close();
-//					} catch (IOException e) {
-//						e.printStackTrace();
-//					}
-//				}
-//			}
-//			i++;
+	public static Collection<? extends String> extractFromFile(String keyWords) {
+		String[] paths = Utility.getPath("html_src/");		//文档集合目录
+		List<String> textList = new ArrayList<String>();
+		
+		for(int i=0; i<paths.length; i++){
+			if(paths[i].indexOf(keyWords) != -1 && keyWords!=" "){
+			String text = Utility.readFile(paths[i]);
+			try {
+				text = ArticleExtractor.INSTANCE.getText(text);
+			} catch (BoilerpipeProcessingException e) {
+				System.out.println("Cannot extract text!!!!! file: " + paths[i]);
+				text = " ";
+			}
+			textList.add(text);
+			}
 		}
-		return htmlContents;
+		return textList;
+	}
+	
+	/**
+	 * 
+	 * @author danran
+	 * Created on 2014年5月8日
+	 */
+	static class runExtract implements Runnable{
+		private List<String> urls;
+		private String keyWords;
+		runExtract(List<String> urls, String keyWord) { this.urls = urls; this.keyWords = keyWord;}
+		public void run() {
+			for (String urlText : urls) {
+				// use boilerplate - Shallow Text Features to extract text
+				String contents = processPage(urlText, keyWords);
+				htmlContents.add(GFString.getEncodedString(contents.getBytes(),"gb2312"));
+			}
+		}
+		
 	}
 }

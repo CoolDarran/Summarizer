@@ -1,17 +1,17 @@
 package com.scutdm.summary.helper;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.scutdm.summary.action.SummaryResult;
 import com.scutdm.summary.extract.Check;
 import com.scutdm.summary.extract.ReadHTML;
-import com.scutdm.summary.extract.TextExtract;
-import com.scutdm.summary.extract.WriteUrl2Txt;
 import com.scutdm.summary.rss.Feed;
 import com.scutdm.summary.rss.FeedMessage;
 import com.scutdm.summary.rss.RSSFeedParser;
+
+import edu.mit.jwi.IDictionary;
+import edu.sussex.nlp.jws.JWS;
 
 /**
  * search keywords in google news
@@ -21,12 +21,12 @@ import com.scutdm.summary.rss.RSSFeedParser;
  * Created on Apr 4, 2014
  */
 public class SearchHelper {
-	private static WriteUrl2Txt wr2Txt = new WriteUrl2Txt();
+//	private static WriteUrl2Txt wr2Txt = new WriteUrl2Txt();
 	private static SummarizerHelper sumHelper = new SummarizerHelper();
-	private static TextExtract txtExtract = new TextExtract();
+//	private static TextExtract txtExtract = new TextExtract();
 	private static SummaryResult sum = new SummaryResult();
 	
-	public static SummaryResult searchGoogle(String keyWords) throws Exception{
+	public static SummaryResult searchGoogle(String keyWords, JWS ws, IDictionary dict) throws Exception{
 		
 		// set goagent proxy
 		System.setProperty("http.proxySet", "true");
@@ -48,72 +48,81 @@ public class SearchHelper {
 		int totalSize = 10;
 		
 		// get 10 news urls
+		long readHTMLS = System.currentTimeMillis();
 		RSSFeedParser parser = new RSSFeedParser(Check.isChinese(keyWords),keyWords);
 		Feed feed = parser.readFeed();
-		System.out.println(feed);
 		for (FeedMessage message : feed.getMessages()) {
+			// 去除访问不到、抽取不到正以及不能在1s内访问到的网站
 			if(urls.indexOf("people.com.cn") == -1){
-				System.out.println(message);
 				urls.add(message.getLink());
 				titleAndUrls.add(message.getTitle() + "," + message.getLink());
 			}
-			if(urls.size() > totalSize)
+			if(urls.size() >= totalSize)
 				break;
-		}		 				               
+		}		
+		long readHTMLE = System.currentTimeMillis();
+		sum.setReadHTMLTime(readHTMLE - readHTMLS);
 		
-		int i = 1;
-		
-		List<String> htmlContents = new ArrayList<String>();
+		long textExtractS = System.currentTimeMillis();
 		// get the text of these 10 news urls
-		if(Check.isChinese(keyWords)){
-			
-			System.out.println("Start extractor");
-			textList.addAll(ReadHTML.readChinHtmlB(urls));
-			System.out.println("End extractor");
-//			for(String text : textList){
-//				if (text != null && !text.equals("")) {
-//		        	wr2Txt.write(keyWords+i, text); //将逻辑给到了IO层！！！
-//		        }
-//				i++;
-//			}
-			
-			// Chinese  use 基于行快分布
-//			htmlContents = ReadHTML.readChinHtml(urls);
-//			for(String content : htmlContents){
-//				// 实现正文抽取
-//		        String parseText = txtExtract.parse(content);
-//		        textList.add(parseText);//set(i-1, textList.get(i-1) + "\n" + parseText);
-//		        System.out.println("text using 行块： " + parseText);	
-//		        if (parseText != null && !parseText.equals("")) {
-//		        	wr2Txt.write(keyWords+i, parseText); //将逻辑给到了IO层！！！
-//		        }
-//		        i++;
-//			}
-						
-		}
-		else{
-			//  use boilerplate - Shallow Text Features to extract text 
-			htmlContents = ReadHTML.readEngHtml(urls);
-			textList.addAll(htmlContents);
-//			for(String text : htmlContents){
-//				if (text != null && !text.equals("")) {
-//		        	wr2Txt.write(keyWords+i, text); //将逻辑给到了IO层！！！
-//		        }
-//				i++;
-//			}
-		}
-		System.out.println("Start summary");
+		System.out.println("Start extractor for " + keyWords);
+		textList.addAll(ReadHTML.pExtractText(urls, keyWords));
+		System.out.println("End extractor for " + keyWords);
+		long textExtractE = System.currentTimeMillis();
+		sum.setTextExtractTime(textExtractE - textExtractS);
+		
+		System.out.println("Start summary for " + keyWords);
+		long summarizerS = System.currentTimeMillis();
 		// pass extracted text to summarizer
-		String summary = sumHelper.passText(Check.isChinese(keyWords), keyWords, textList);
+		String summary = sumHelper.passText(Check.isChinese(keyWords), keyWords, textList,ws,dict);
+		long summarizerE = System.currentTimeMillis();
+		System.out.println("End summary for " + keyWords);
+		sum.setSummarizerTime(summarizerE - summarizerS);
 		System.out.println("Summary: " + summary);
 		
+		sum.setTextSize(textList.size());
+		sum.setTextList(textList);
 		sum.setSummary(summary);
 		sum.setKeyWords(keyWords);
 		sum.setUrls(titleAndUrls);
 		return sum;
+	}
+
+	public static SummaryResult doSummarizer(String keyWords, JWS ws, IDictionary dict) {
+		if(Check.isChinese(keyWords)){
+			System.setProperty("file.encoding", "gb2312");
+		}else{
+			System.setProperty("file.encoding", "GBK");
+		}
+		
+		// store extracted text
+		List<String> textList = new ArrayList<String>();
+		
+		long textExtractS = System.currentTimeMillis();
+		// get the text of these 10 news urls
+		
+			System.out.println("Start extractor for " + keyWords);
+			textList.addAll(ReadHTML.extractFromFile(keyWords));
+			System.out.println("End extractor for " + keyWords);
+			
+			
+		long textExtractE = System.currentTimeMillis();
+		sum.setTextExtractTime(textExtractE - textExtractS);
+		
+		System.out.println("Start summary for " + keyWords);
+		long summarizerS = System.currentTimeMillis();
+		// pass extracted text to summarizer
+		String summary = sumHelper.passText(Check.isChinese(keyWords), keyWords, textList,ws,dict);
+		long summarizerE = System.currentTimeMillis();
+		System.out.println("End summary for " + keyWords);
+		sum.setSummarizerTime(summarizerE - summarizerS);
+		System.out.println("Summary: " + summary);
+		
+		sum.setTextSize(textList.size());
+		sum.setTextList(textList);
+		sum.setSummary(summary);
+		sum.setKeyWords(keyWords);
+		return sum;
 	}		
 	
-	public static void main(String[] argc) throws Exception{
-		searchGoogle("我是歌手");	
-	}
 }

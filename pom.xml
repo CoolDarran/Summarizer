@@ -32,7 +32,6 @@
 		<groupId>com.scutdm</groupId>
 		<artifactId>chinsummary</artifactId>
 		<version>1.0</version>
-		<scope>compile</scope>
 	</dependency>
   
     <dependency>

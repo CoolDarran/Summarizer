@@ -1,10 +1,5 @@
 package com.scutdm.summary.helper;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,10 +19,11 @@ import com.wrap.chinsummarizer.doc.Sentence;
 import com.wrap.chinsummarizer.doc.Word;
 import com.wrap.chinsummarizer.preprocess.Utility;
 import com.wrap.chinsummarizer.summary.SubTopic;
-import com.wrap.chinsummarizer.test.Test;
 
+import edu.mit.jwi.IDictionary;
 import edu.mit.jwi.item.POS;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
+import edu.sussex.nlp.jws.JWS;
 
 /**
  * summarizer helper 
@@ -44,30 +40,37 @@ public class SummarizerHelper {
 	 * @param chinese
 	 * @param keyWords 
 	 * @param textList
+	 * @param ws 
+	 * @param dict 
 	 */
-	public String passText(boolean chinese, String keyWords, List<String> textList) {
+	public String passText(boolean chinese, String keyWords, List<String> textList, JWS ws, IDictionary dict) {
 		String summaryContent = "";
 		if(chinese){
 			// for chinese text
 			summaryContent = chinSummary(textList, keyWords);
 		}else{
 			// for english text
-			summaryContent = engSummary(textList, keyWords);
+			summaryContent = engSummary(textList, keyWords, ws,dict);
 		}
 		return summaryContent;
 	}
 
-	private String engSummary(List<String> textList, String keyWords) {
+	private String engSummary(List<String> textList, String keyWords, JWS ws, IDictionary dict) {
 		
 		TokenizerFactory TOKENIZER_FACTORY = new IndoEuropeanTokenizerFactory();
 	    SentenceModel SENTENCE_MODEL  = new MedlineSentenceModel();
 	    MaxentTagger tagger = new MaxentTagger("taggers/english-left3words-distsim.tagger");
 		
 		com.wrap.engsummarizer.doc.Article[] articles = new com.wrap.engsummarizer.doc.Article[textList.size()];
+		
+		long startTime = System.currentTimeMillis();
 		for(int i = 0; i < articles.length; i++){
 			articles[i] = new com.wrap.engsummarizer.doc.Article(String.valueOf(i), textList.get(i), TOKENIZER_FACTORY,SENTENCE_MODEL,tagger);
 		}
+		long endTime = System.currentTimeMillis();
+		com.scutdm.summary.utility.Utility.printTimeElapsed("Article Construct", startTime, endTime);
 		
+		startTime = System.currentTimeMillis();
 		List<com.wrap.engsummarizer.doc.Word> nounWords = new ArrayList<com.wrap.engsummarizer.doc.Word>();
 		List<com.wrap.engsummarizer.doc.Word> verbWords = new ArrayList<com.wrap.engsummarizer.doc.Word>();
 		for(com.wrap.engsummarizer.doc.Article article:articles){
@@ -75,27 +78,36 @@ public class SummarizerHelper {
 				List<com.wrap.engsummarizer.doc.Word> tempNounWords = new ArrayList<com.wrap.engsummarizer.doc.Word>();
 				List<com.wrap.engsummarizer.doc.Word> tempVerbWords = new ArrayList<com.wrap.engsummarizer.doc.Word>();
 				for (com.wrap.engsummarizer.doc.Sentence sentence : article.getSentences()) {
+//					System.out.println("\nNoun:");
 					for (com.wrap.engsummarizer.doc.Word word : sentence.getNounWords()) {
+//						System.out.print(word.getLemma() + " ");
 						tempNounWords.add(word);
 						nounWords.add(word);
 					}
+//					System.out.println("\nVerb:");
 					for (com.wrap.engsummarizer.doc.Word word : sentence.getVerbWords()) {
+//						System.out.print(word.getLemma() + " ");
 						tempVerbWords.add(word);
 						verbWords.add(word);
 					}
 				}
 				com.wrap.engsummarizer.doc.Word[] nouns = new com.wrap.engsummarizer.doc.Word[tempNounWords.size()];
-				com.wrap.engsummarizer.preprocess.Utility.senseDisambiguation(tempNounWords.toArray(nouns), POS.NOUN);
+				com.wrap.engsummarizer.preprocess.Utility.senseDisambiguation(tempNounWords.toArray(nouns), POS.NOUN,ws,dict);
 				com.wrap.engsummarizer.doc.Word[] verbs = new com.wrap.engsummarizer.doc.Word[tempVerbWords.size()];
-				com.wrap.engsummarizer.preprocess.Utility.senseDisambiguation(tempVerbWords.toArray(verbs), POS.VERB);
+				com.wrap.engsummarizer.preprocess.Utility.senseDisambiguation(tempVerbWords.toArray(verbs), POS.VERB,ws,dict);
 			}
 		}
+		endTime = System.currentTimeMillis();
+		com.scutdm.summary.utility.Utility.printTimeElapsed("Words Sense Disambiguation", startTime, endTime);
 		
+		startTime = System.currentTimeMillis();
 		//根据语义对词语聚类
 		com.wrap.engsummarizer.cluster.WordDBSCAN dbscanNoun = new com.wrap.engsummarizer.cluster.WordDBSCAN();
-		dbscanNoun.Cluster(nounWords,0.6,3,"n");
+		dbscanNoun.Cluster(nounWords,0.6,3,"n",ws);
 		com.wrap.engsummarizer.cluster.WordDBSCAN dbscanVerb = new com.wrap.engsummarizer.cluster.WordDBSCAN();
-		dbscanVerb.Cluster(verbWords,0.6,3,"v");
+		dbscanVerb.Cluster(verbWords,0.6,3,"v",ws);
+		endTime = System.currentTimeMillis();
+		com.scutdm.summary.utility.Utility.printTimeElapsed("Words Cluster", startTime, endTime);
 		
 		com.wrap.engsummarizer.analyz.VectorBuilder vectorBuilder = new com.wrap.engsummarizer.analyz.VectorBuilder();
 		List<com.wrap.engsummarizer.doc.Sentence> sentenceList = new LinkedList<com.wrap.engsummarizer.doc.Sentence>();
@@ -108,10 +120,13 @@ public class SummarizerHelper {
 			}
 		}
 		
+		startTime = System.currentTimeMillis();
 		//句子聚类分析
-		List<com.wrap.engsummarizer.summary.SubTopic> subTopics = new LinkedList<>();
+		List<com.wrap.engsummarizer.summary.SubTopic> subTopics = new LinkedList<com.wrap.engsummarizer.summary.SubTopic>();
 		com.wrap.engsummarizer.cluster.SentenceDBSCAN sentenceDBSCAN = new com.wrap.engsummarizer.cluster.SentenceDBSCAN();
 		sentenceDBSCAN.Cluster(subTopics,sentenceList, 0.6, 3);
+		endTime = System.currentTimeMillis();
+		com.scutdm.summary.utility.Utility.printTimeElapsed("Sentences Cluster", startTime, endTime);
 		
 		//对子主题排序
 		Collections.sort(subTopics,new Comparator<com.wrap.engsummarizer.summary.SubTopic>(){  
@@ -122,7 +137,7 @@ public class SummarizerHelper {
 		
 		String summary = "";
 		for(com.wrap.engsummarizer.summary.SubTopic subTopic:subTopics){
-			System.out.println(subTopic.getSummarySent());
+//			System.out.println(subTopic.getSummarySent());
 			summary += subTopic.getSummarySent() + "\n";
 		}
 
@@ -130,19 +145,6 @@ public class SummarizerHelper {
 	}
 
 	private static String chinSummary(List<String> textList, String keyWords) {
-		
-//		String[] paths = Utility.getPath("text_result");		//文档集合目录
-//		Article[] articles = new Article[paths.length];
-//		for(int i=0; i<articles.length; i++){
-//			String text = Utility.readFile(paths[i]);
-//			System.out.println(paths[i]);
-//			articles[i] = new Article(String.valueOf(i),text);
-//		}
-//		String summary = Test.getMain(articles);
-//		
-//		System.out.println("Summary: " + summary);
-//		
-//		return summary;
 		
 		Article[] articles = new Article[textList.size()];
 		for(int i = 0; i < articles.length; i++){
@@ -155,19 +157,19 @@ public class SummarizerHelper {
 			List<Word> tempNounWords = new ArrayList<Word>();
 			List<Word> tempVerbWords = new ArrayList<Word>();
 			for(Sentence sentence:article.getSentences()){
-				System.out.println("\nNoun:");
+//				System.out.println("\nNoun:");
 				for(Word word:sentence.getNounWords()){
-					System.out.print(word.getLemma() + " ");
+//					System.out.print(word.getLemma() + " ");
 					tempNounWords.add(word);
 					nounWords.add(word);
 				}
-				System.out.println("\nVerb:");
+//				System.out.println("\nVerb:");
 				for(Word word:sentence.getVerbWords()){
-					System.out.print(word.getLemma() + " ");
+//					System.out.print(word.getLemma() + " ");
 					tempVerbWords.add(word);
 					verbWords.add(word);
 				}
-				System.out.println();
+//				System.out.println();
 			}
 			Word[] nouns = new Word[tempNounWords.size()];
 			nouns = tempNounWords.toArray(nouns);
@@ -188,12 +190,11 @@ public class SummarizerHelper {
 		for(Article article:articles){
 			for(Sentence sentence:article.getSentences()){
 				vectorBuilder.sentVecBuilder(sentence);
-				
 				sentenceList.add(sentence);
 			}			
 		}
 		
-		List<SubTopic> subTopics = new LinkedList<>();
+		List<SubTopic> subTopics = new LinkedList<SubTopic>();
 		SentenceDBSCAN sentenceDBSCAN = new SentenceDBSCAN();
 		sentenceDBSCAN.Cluster(subTopics,sentenceList, 0.8, 3);
 		
@@ -205,16 +206,10 @@ public class SummarizerHelper {
 		
 		String summary = "";
 		for(SubTopic subTopic:subTopics){
-			System.out.println(subTopic.getSummarySent());
 			summary += subTopic.getSummarySent() + "\n";
 		}
 
 		return summary;
-	}
-	
-	public static void main(String[] args) throws UnsupportedEncodingException{
-		System.setProperty("file.encoding", "gb2312");
-		chinSummary(null, null);
 	}
 
 }

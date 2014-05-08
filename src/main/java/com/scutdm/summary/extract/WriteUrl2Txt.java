@@ -4,13 +4,12 @@
  */
 package com.scutdm.summary.extract;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.io.Writer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -29,12 +28,12 @@ public class WriteUrl2Txt {
     public static String resDir;
 
     static {      
-        resDir = "text_result/";
+        resDir = "html_src/";
         
-        File file = new File(resDir);
-        if (!file.exists()) {
-            file.mkdirs();
-        }
+//        File file = new File(resDir);
+//        if (!file.exists()) {
+//            file.mkdirs();
+//        }
     }
     
     //把url正文提取结果写入文本文件
@@ -61,6 +60,32 @@ public class WriteUrl2Txt {
             }
         }
     }
+    
+    public void write(String fileName, BufferedReader in) {
+    	File file = new File(resDir + fileName + ".txt");
+        //file.deleteOnExit();
+    	BufferedWriter pw = null;
+        try {
+            pw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
+            String line = "";
+            while((line = in.readLine())!=null){
+            	pw.write(line);
+            	pw.newLine();
+            }
+            pw.flush();
+
+        } catch (IOException ex) {
+            Logger.getLogger(WriteUrl2Txt.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            if (pw != null) {
+                try {
+					pw.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+            }
+        }
+	}
 
     public String generateFileName(String url) throws NoSuchAlgorithmException {
         MessageDigest md = null;

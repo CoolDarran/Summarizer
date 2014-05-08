@@ -1,16 +1,9 @@
 package com.scutdm.summary.rss;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Iterator;
-
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.Characters;
-import javax.xml.stream.events.XMLEvent;
 
 import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndFeed;
@@ -61,7 +54,7 @@ public class RSSFeedParser {
 		try{
 			reader = new XmlReader(url);
 			SyndFeed feeds = new SyndFeedInput().build(reader);
-			System.out.println("Feed Title: " + feeds.getTitle());
+//			System.out.println("Feed Title: " + feeds.getTitle());
 			
 			// feed header
 			feed = new Feed(feeds.getTitle(), feeds.getLink(), feeds.getDescription(), feeds.getLanguage(),
@@ -69,7 +62,7 @@ public class RSSFeedParser {
 			
 			for(Iterator<?> it = feeds.getEntries().iterator(); it.hasNext();){
 				SyndEntry entry = (SyndEntry) it.next();
-				System.out.println(entry.getTitle());
+//				System.out.println(entry.getTitle());
 				FeedMessage message = new FeedMessage();
 				message.setAuthor(entry.getAuthor());
 				message.setDescription(entry.getDescription().toString());

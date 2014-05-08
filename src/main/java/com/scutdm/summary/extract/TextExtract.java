@@ -30,7 +30,7 @@ public class TextExtract {
 		lines = new ArrayList<String>();
 		indexDistribution = new ArrayList<Integer>();
 		text = new StringBuilder();
-		flag = false;
+		setFlag(false);
 		/* 当待抽取的网页正文中遇到成块的新闻标题未剔除时，只要增大此阈值即可。*/
 		/* 阈值增大，准确率提升，召回率下降；值变小，噪声会大，但可以保证抽到只有一句话的正文 */
 		threshold	= -1;   
@@ -57,7 +57,7 @@ public class TextExtract {
 	 * @return 网页正文string
 	 */
 	public String parse(String _html, boolean _flag) {
-		flag = _flag;
+		setFlag(_flag);
 		html = _html;
 		html = preProcess(html);
 //		System.out.println(html);
@@ -208,5 +208,15 @@ public class TextExtract {
 		String s = "<img  class='fit-image' onload='javascript:if(this.width>498)this.width=498;' />hello";
 		//source = source.replaceAll("<[^'\"]*['\"].*['\"].*?>", "");
 		System.out.println(TextExtract.preProcess(s));
+	}
+
+
+	public boolean isFlag() {
+		return flag;
+	}
+
+
+	public void setFlag(boolean flag) {
+		this.flag = flag;
 	}
 }
