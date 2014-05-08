@@ -52,7 +52,7 @@ public class SearchHelper {
 		RSSFeedParser parser = new RSSFeedParser(Check.isChinese(keyWords),keyWords);
 		Feed feed = parser.readFeed();
 		for (FeedMessage message : feed.getMessages()) {
-			// 去除访问不到、抽取不到正以及不能在1s内访问到的网站
+			// 去除访问不到、抽取不到正以及不能在1s内访问的网站
 			if(urls.indexOf("people.com.cn") == -1){
 				urls.add(message.getLink());
 				titleAndUrls.add(message.getTitle() + "," + message.getLink());
