@@ -17,6 +17,13 @@ public class Utility {
 			"zjol.com.cn", "yangtse.com", "blog.ifeng.com", "xinhuanet.com",
 			"chinanews.com", "qzwb.com" };
 	
+	/**
+	 * 输出时间间隔
+	 * 
+	 * @param title
+	 * @param startTime
+	 * @param endTime
+	 */
 	public static void printTimeElapsed(String title, long startTime, long endTime){
 		date = new Date(endTime - startTime);
 		sdf = new SimpleDateFormat("HH:mm:ss:SS");
@@ -24,6 +31,11 @@ public class Utility {
 		System.out.println(title + " Time Elapsed (HH:mm:ss:SS): " + sdf.format(date));
 	}
 
+	/**
+	 * 输出结果
+	 * 
+	 * @param sum
+	 */
 	public static void printTimeElapsed(SummaryResult sum) {
 		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss:SS");
 		sdf.setTimeZone(new java.util.SimpleTimeZone(0, "UTC"));
@@ -33,12 +45,21 @@ public class Utility {
 		System.out.println("Summarizer Time Elapsed (HH:mm:ss:SS): " + sdf.format(new Date(sum.getSummarizerTime())));
 	}
 	
+	/**
+	 * 判断url是否可访问
+	 * 
+	 * @param url
+	 * @return
+	 */
 	public static boolean accessableUrls(String url){
+		int count = 0;
 		for (int i = 0; i < ignoreUrls.length; i++) {
 			if (url.indexOf(ignoreUrls[i]) == -1) {
-				return true;
+				count++;
 			}
 		}
+		if(count == ignoreUrls.length)
+			return true;
 		return false;
 	}
 }
