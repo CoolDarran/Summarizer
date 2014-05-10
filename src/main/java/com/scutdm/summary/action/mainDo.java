@@ -9,9 +9,8 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import com.scutdm.summary.extract.Check;
 import com.scutdm.summary.helper.SearchHelper;
-import com.scutdm.summary.utility.Utility;
+import com.scutdm.summary.utility.CommonUtility;
 
 import edu.mit.jwi.Dictionary;
 import edu.mit.jwi.IDictionary;
@@ -66,7 +65,7 @@ public class mainDo{
 
 				long endTime = System.currentTimeMillis();
 				
-				sum.setAvgNum(Utility.txtAvgNum(sum.getTextList(),Check.isChinese(keyWord)));
+				sum.setAvgNum(CommonUtility.txtAvgNum(sum.getTextList(),CommonUtility.isChinese(keyWord)));
 				Date date = new Date(endTime - startTime);
 				SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss:SS");
 				sdf.setTimeZone(new java.util.SimpleTimeZone(0, "UTC"));

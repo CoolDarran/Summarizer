@@ -5,7 +5,7 @@ import java.net.URL;
 import com.opensymphony.xwork2.ActionSupport;
 import com.opensymphony.xwork2.Preparable;
 import com.scutdm.summary.helper.SearchHelper;
-import com.scutdm.summary.utility.Utility;
+import com.scutdm.summary.utility.CommonUtility;
 
 import edu.mit.jwi.Dictionary;
 import edu.mit.jwi.IDictionary;
@@ -36,16 +36,11 @@ public class SearchAction extends ActionSupport implements Preparable{
 		this.keyWords = keyWords;
 	}
 	
-	/**
-	 * ËÑË÷¹Ø¼ü×Ö
-	 * 
-	 * @return
-	 */
 	public String searchWords(){
 		System.out.println(keyWords);
 		try {
 			setSum(SearchHelper.searchGoogle(keyWords, ws, dict));
-			Utility.printTimeElapsed(getSum());
+			CommonUtility.printTimeElapsed(getSum());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

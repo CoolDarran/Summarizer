@@ -17,7 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * ½«urlÅÀÈ¡µÄ½á¹û£¬Ğ´Èëµ½txtÎÄ¼ş
+ * å°†urlçˆ¬å–çš„ç»“æœï¼Œå†™å…¥åˆ°txtæ–‡ä»¶
  *
  * @author Administrator
  */
@@ -36,7 +36,7 @@ public class WriteUrl2Txt {
 //        }
     }
     
-    //°ÑurlÕıÎÄÌáÈ¡½á¹ûĞ´ÈëÎÄ±¾ÎÄ¼ş
+    //æŠŠurlæ­£æ–‡æå–ç»“æœå†™å…¥æ–‡æœ¬æ–‡ä»¶
 
     public void write(String fileName, String urlResult) {
 
@@ -102,22 +102,22 @@ public class WriteUrl2Txt {
 
     public int readFromFile(String path) {
         if (!path.endsWith(".txt")) {
-            //Ö»Ö§³ÖtxtÎÄ¼şµÄ¶ÁĞ´
+            //åªæ”¯æŒtxtæ–‡ä»¶çš„è¯»å†™
             return UNSUPPORT_TYPE;
         }
         File file = new File(path);
 
         if (!file.exists()) {
-            //²»´æÔÚ´ËÎÄ¼ş
+            //ä¸å­˜åœ¨æ­¤æ–‡ä»¶
             return FILE_NOT_EXIT;
         }
-        //ÖğĞĞ¶Á½øurl
+        //é€è¡Œè¯»è¿›url
         return 0;
 
     }
 
     public static void main(String[] args) {
-        //²âÊÔÊÇ·ñÉú³ÉÎ¨Ò»Âë.
+        //æµ‹è¯•æ˜¯å¦ç”Ÿæˆå”¯ä¸€ç .
         String[] urls = {"http://www.sina.com.cn/", "http://www.sina.com.cn/abc.html", "http://www.sina.com.cn/abc2.html"};
         WriteUrl2Txt writer = new WriteUrl2Txt();
         for (String url : urls) {

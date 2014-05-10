@@ -32,5 +32,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/IKAnalyzer2012FF_u1.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

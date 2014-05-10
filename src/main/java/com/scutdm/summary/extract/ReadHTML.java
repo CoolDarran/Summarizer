@@ -1,30 +1,21 @@
 package com.scutdm.summary.extract;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.MalformedURLException;
-import java.net.Socket;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.UnknownHostException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.apache.http.client.HttpClient;
-import org.ictclas4j.utility.GFString;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 
-import com.wrap.chinsummarizer.preprocess.Utility;
+import com.scutdm.summary.preprocess.CUtility;
 
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
 import de.l3s.boilerpipe.extractors.ArticleExtractor;
@@ -37,111 +28,68 @@ import de.l3s.boilerpipe.extractors.ArticleExtractor;
  */
 public class ReadHTML {
 	
-	private static List<String> htmlContents;
+	// extracted texts
+	private static List<String> texts;
 	
 	/**
 	 * read html content according to the list of urls
-	 *  π”√Boilerplate
+	 * ‰ΩøÁî®BoilerplateËøõË°åÊ≠£ÊñáÊäΩÂèñ
 	 * @param urls
-	 * @param keyWords 
 	 * @return
 	 */
-	public static List<String> extractText(List<String> urls, String keyWords) {
-		List<String> htmlContents = new ArrayList<String>();
-		for (String urlText : urls) {
-			// use boilerplate - Shallow Text Features to extract text
-			String contents = processPage(urlText,keyWords);
-			htmlContents.add(GFString.getEncodedString(contents.getBytes(),"gb2312"));
-		}
-		return htmlContents;
-	}
-	
-	public static List<String> pExtractText(List<String> urls, String keyWords) {
-		htmlContents = new ArrayList<String>();
-		int splitSize = (int) Math.floor(urls.size()/3.0);
-		synchronized(htmlContents){
-			Thread t1 = new Thread(new runExtract(urls.subList(0, splitSize),keyWords));
-			Thread t2 = new Thread(new runExtract(urls.subList(splitSize, 2*splitSize),keyWords));
-			Thread t3 = new Thread(new runExtract(urls.subList(2*splitSize, urls.size()),keyWords));
-//			Thread t4 = new Thread(new runExtract(urls.subList(3*splitSize, 4*splitSize),keyWords));
-//			Thread t5 = new Thread(new runExtract(urls.subList(4*splitSize, urls.size()),keyWords));
-			t1.start();
-			t2.start();
-			t3.start();
-//			t4.start();
-//			t5.start();
+	public static List<String> extractText(List<String> urls) {
+		texts = new ArrayList<String>();
+		
+		// Create an HttpClient with the ThreadSafeClientConnManager.
+        // This connection manager must be used if more than one thread will
+        // be using the HttpClient.
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+        cm.setMaxTotal(100);
+
+        CloseableHttpClient httpclient = HttpClients.custom().setConnectionManager(cm).build();
+		
+		synchronized (texts) {
 			try {
-				t1.join();
-				t2.join();
-				t3.join();
-//				t4.join();
-//				t5.join();
+				// create a thread for each URI
+				ExtractThread[] threads = new ExtractThread[urls.size()];
+				for (int i = 0; i < threads.length; i++) {
+					HttpGet httpget = new HttpGet(urls.get(i));
+					threads[i] = new ExtractThread(httpclient, httpget, i + 1);
+				}
+				// start the threads
+				for (int j = 0; j < threads.length; j++) {
+					threads[j].start();
+				}
+				// join the threads
+				for (int j = 0; j < threads.length; j++) {
+					threads[j].join();
+				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
+			} finally {
+				try {
+					httpclient.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
-		return htmlContents;
-	}
-	
-	/**
-	 *  "Boilerplate Detection using Shallow Text Features" by Christian Kohlsch®πtter et al., presented at WSDM 2010
-	 *  https://code.google.com/p/boilerpipe/
-	 *  ≥È»°’˝Œƒ∂Œ
-	 * 
-	 * @param urlText
-	 * @param keyWords 
-	 * @return
-	 */
-	public static String processPage(String urlText, String keyWords){
-		String text = "";
-		try {
-			URL url = new URL(urlText);
-			URLConnection con = url.openConnection();
-			// time out 1s
-			con.setConnectTimeout(1000);
-			Pattern p = Pattern.compile("text/html;\\s*charset=([^\\s]+)\\s*");
-			Matcher m;
-			if(con.getContentType()!=null)
-				m = p.matcher(con.getContentType());
-			else
-				m = p.matcher(" ");
-			/* If Content-Type doesn't match this pre-conception, choose default "gb2312" and 
-			 * hope for the best. */
-			String charset = m.matches() ? m.group(1) : Check.checkCharset(url);
-			
-			BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream(), Charset.forName(charset)));
-			
-			text = ArticleExtractor.INSTANCE.getText(in);
-			
-			System.out.println("Extracted text: " + text);
-		} catch (MalformedURLException e) {
-			Logger.getLogger(ReadHTML.class.getName()).log(Level.SEVERE, null, e);
-			return " ";
-		} catch (BoilerpipeProcessingException e) {
-			System.out.println("Cannot extract text!!!!! site: " + urlText);
-			Logger.getLogger(ReadHTML.class.getName()).log(Level.SEVERE, null, e);
-			return " ";
-		} catch (IOException e) {
-			System.out.println("Cannot read html !!!!! site: " + urlText);
-			Logger.getLogger(ReadHTML.class.getName()).log(Level.SEVERE, null, e);
-			return " ";
-		}
-		return text;
+		return texts;
 	}
 
 	/**
-	 * ¥”Œƒµµ∂¡html‘¥Œƒº˛
-	 * ‘⁄html_srcƒø¬ºœ¬
+	 * ‰ªéÊñáÊ°£ËØªhtmlÊ∫êÊñá‰ª∂
+	 * Âú®html_srcÁõÆÂΩï‰∏ã
 	 * @param keyWords
 	 * @return
 	 */
 	public static Collection<? extends String> extractFromFile(String keyWords) {
-		String[] paths = Utility.getPath("html_src/");		//ŒƒµµºØ∫œƒø¬º
+		String[] paths = CUtility.getPath("html_src/");		//ÊñáÊ°£ÈõÜÂêàÁõÆÂΩï
 		List<String> textList = new ArrayList<String>();
 		
 		for(int i=0; i<paths.length; i++){
 			if(paths[i].indexOf(keyWords) != -1 && keyWords!=" "){
-			String text = Utility.readFile(paths[i]);
+			String text = CUtility.readFile(paths[i]);
 			try {
 				text = ArticleExtractor.INSTANCE.getText(text);
 			} catch (BoilerpipeProcessingException e) {
@@ -155,21 +103,46 @@ public class ReadHTML {
 	}
 	
 	/**
-	 * ∂‡œﬂ≥Ã ∂¡»°HTML≤¢≥È»°’˝Œƒ
+	 * Â§öÁ∫øÁ®ã ËØªÂèñHTMLÂπ∂ÊäΩÂèñÊ≠£Êñá
 	 * @author danran
-	 * Created on 2014ƒÍ5‘¬8»’
+	 * Created on 2014Âπ¥5Êúà10Êó•
 	 */
-	static class runExtract implements Runnable{
-		private List<String> urls;
-		private String keyWords;
-		runExtract(List<String> urls, String keyWord) { this.urls = urls; this.keyWords = keyWord;}
-		public void run() {
-			for (String urlText : urls) {
-				// use boilerplate - Shallow Text Features to extract text
-				String contents = processPage(urlText, keyWords);
-				htmlContents.add(GFString.getEncodedString(contents.getBytes(),"gb2312"));
-			}
-		}
-	}
+	static class ExtractThread extends Thread {
+
+        private final CloseableHttpClient httpClient;
+        private final HttpContext context;
+        private final HttpGet httpget;
+        private final int id;
+
+        public ExtractThread(CloseableHttpClient httpClient, HttpGet httpget, int id) {
+            this.httpClient = httpClient;
+            this.context = new BasicHttpContext();
+            this.httpget = httpget;
+            this.id = id;
+        }
+
+        /**
+         * Executes the GetMethod and extract the text from html.
+         */
+        @Override
+        public void run() {
+            try {
+                CloseableHttpResponse response = httpClient.execute(httpget, context);
+                try {
+                    // get the response body as an array of bytes
+                    HttpEntity entity = response.getEntity();
+                    if (entity != null) {
+                        byte[] bytes = EntityUtils.toByteArray(entity);
+                        texts.add(ArticleExtractor.INSTANCE.getText(new String(bytes,"utf-8")));
+                    }
+                } finally {
+                    response.close();
+                }
+            } catch (Exception e) {
+                System.out.println(id + " - error: " + e);
+            }
+        }
+
+    }
 	
 }

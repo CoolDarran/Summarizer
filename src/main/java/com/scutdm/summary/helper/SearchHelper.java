@@ -4,12 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.scutdm.summary.action.SummaryResult;
-import com.scutdm.summary.extract.Check;
 import com.scutdm.summary.extract.ReadHTML;
 import com.scutdm.summary.rss.Feed;
 import com.scutdm.summary.rss.FeedMessage;
 import com.scutdm.summary.rss.RSSFeedParser;
-import com.scutdm.summary.utility.Utility;
+import com.scutdm.summary.utility.CommonUtility;
 
 import edu.mit.jwi.IDictionary;
 import edu.sussex.nlp.jws.JWS;
@@ -29,14 +28,7 @@ public class SearchHelper {
 	
 	public static SummaryResult searchGoogle(String keyWords, JWS ws, IDictionary dict) throws Exception{
 		
-		Utility.setProxy();
-		
-		// set encoding
-		if(Check.isChinese(keyWords)){
-			System.setProperty("file.encoding", "gb2312");
-		}else{
-			System.setProperty("file.encoding", "GBK");
-		}
+		CommonUtility.setProxy();
 		
 		// store fetch urls
 		List<String> urls = new ArrayList<String>();
@@ -48,12 +40,12 @@ public class SearchHelper {
 		
 		// get 10 news urls
 		long readHTMLS = System.currentTimeMillis();
-		RSSFeedParser parser = new RSSFeedParser(Check.isChinese(keyWords),keyWords);
+		RSSFeedParser parser = new RSSFeedParser(CommonUtility.isChinese(keyWords),keyWords);
 		Feed feed = parser.readFeed();
 		for (FeedMessage message : feed.getMessages()) {
 			String url = message.getLink();
-			// È¥³ı·ÃÎÊ²»µ½¡¢³éÈ¡²»µ½ÕıÒÔ¼°²»ÄÜÔÚ1sÄÚ·ÃÎÊµÄÍøÕ¾
-			if(Utility.accessableUrls(url)){
+			// å»é™¤è®¿é—®ä¸åˆ°ã€æŠ½å–ä¸åˆ°æ­£ä»¥åŠä¸èƒ½åœ¨1så†…è®¿é—®çš„ç½‘ç«™
+			if(CommonUtility.accessableUrls(url)){
 				urls.add(url);
 				titleAndUrls.add(message.getTitle() + "," + message.getLink());
 			}
@@ -66,7 +58,7 @@ public class SearchHelper {
 		long textExtractS = System.currentTimeMillis();
 		// get the text of these 10 news urls
 		System.out.println("Start extractor for " + keyWords);
-		textList.addAll(ReadHTML.pExtractText(urls, keyWords));
+		textList.addAll(ReadHTML.extractText(urls));
 		System.out.println("End extractor for " + keyWords);
 		long textExtractE = System.currentTimeMillis();
 		sum.setTextExtractTime(textExtractE - textExtractS);
@@ -74,13 +66,13 @@ public class SearchHelper {
 		System.out.println("Start summary for " + keyWords);
 		long summarizerS = System.currentTimeMillis();
 		// pass extracted text to summarizer
-		String summary = sumHelper.passText(Check.isChinese(keyWords), keyWords, textList,ws,dict);
+		String summary = sumHelper.passText(CommonUtility.isChinese(keyWords), keyWords, textList,ws,dict);
 		long summarizerE = System.currentTimeMillis();
 		System.out.println("End summary for " + keyWords);
 		sum.setSummarizerTime(summarizerE - summarizerS);
 		System.out.println("Summary: " + summary);
 		
-		sum.setAvgNum(Utility.txtAvgNum(textList,Check.isChinese(keyWords)));
+		sum.setAvgNum(CommonUtility.txtAvgNum(textList,CommonUtility.isChinese(keyWords)));
 		sum.setTextSize(textList.size());
 		sum.setTextList(textList);
 		sum.setSummary(summary);
@@ -90,7 +82,7 @@ public class SearchHelper {
 	}
 
 	public static SummaryResult doSummarizer(String keyWords, JWS ws, IDictionary dict) {
-		if(Check.isChinese(keyWords)){
+		if(CommonUtility.isChinese(keyWords)){
 			System.setProperty("file.encoding", "gb2312");
 		}else{
 			System.setProperty("file.encoding", "GBK");
@@ -113,7 +105,7 @@ public class SearchHelper {
 		System.out.println("Start summary for " + keyWords);
 		long summarizerS = System.currentTimeMillis();
 		// pass extracted text to summarizer
-		String summary = sumHelper.passText(Check.isChinese(keyWords), keyWords, textList,ws,dict);
+		String summary = sumHelper.passText(CommonUtility.isChinese(keyWords), keyWords, textList,ws,dict);
 		long summarizerE = System.currentTimeMillis();
 		System.out.println("End summary for " + keyWords);
 		sum.setSummarizerTime(summarizerE - summarizerS);

@@ -3,23 +3,23 @@ package com.scutdm.summary.action;
 import java.util.List;
 
 public class SummaryResult {
-	// ¹Ø¼ü´Ê
+	// å…³é”®è¯
 	private String keyWords;
-	// ÕªÒª
+	// æ‘˜è¦
 	private String summary;
-	// urlÁĞ±í
+	// urlåˆ—è¡¨
 	private List<String> urls;
-	// ÕıÎÄÁĞ±í
+	// æ­£æ–‡åˆ—è¡¨
 	private List<String> textList;
-	// ÕıÎÄÆ½¾ù×ÖÊı
+	// æ­£æ–‡å¹³å‡å­—æ•°
 	private int avgNum;
-	// ÕıÎÄÊıÄ¿
+	// æ­£æ–‡æ•°ç›®
 	private int textSize;
-	// ¶ÁÍøÒ³Ê±¼ä
+	// è¯»ç½‘é¡µæ—¶é—´
 	private long readHTMLTime;
-	// ÕıÎÄ³éÈ¡Ê±¼ä
+	// æ­£æ–‡æŠ½å–æ—¶é—´
 	private long textExtractTime;
-	// ÕªÒªÊ±¼ä
+	// æ‘˜è¦æ—¶é—´
 	private long summarizerTime;
 	
 	public String getKeyWords() {
