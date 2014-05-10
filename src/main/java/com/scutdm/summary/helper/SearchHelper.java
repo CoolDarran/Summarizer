@@ -29,11 +29,9 @@ public class SearchHelper {
 	
 	public static SummaryResult searchGoogle(String keyWords, JWS ws, IDictionary dict) throws Exception{
 		
-		// set goagent proxy
-		System.setProperty("http.proxySet", "true");
-		System.setProperty("http.proxyHost", "127.0.0.1");
-		System.setProperty("http.proxyPort", "8087");
+		Utility.setProxy();
 		
+		// set encoding
 		if(Check.isChinese(keyWords)){
 			System.setProperty("file.encoding", "gb2312");
 		}else{
@@ -53,8 +51,8 @@ public class SearchHelper {
 		RSSFeedParser parser = new RSSFeedParser(Check.isChinese(keyWords),keyWords);
 		Feed feed = parser.readFeed();
 		for (FeedMessage message : feed.getMessages()) {
-			// 去除访问不到、抽取不到正以及不能在1s内访问的网站
 			String url = message.getLink();
+			// 去除访问不到、抽取不到正以及不能在1s内访问的网站
 			if(Utility.accessableUrls(url)){
 				urls.add(url);
 				titleAndUrls.add(message.getTitle() + "," + message.getLink());
@@ -82,6 +80,7 @@ public class SearchHelper {
 		sum.setSummarizerTime(summarizerE - summarizerS);
 		System.out.println("Summary: " + summary);
 		
+		sum.setAvgNum(Utility.txtAvgNum(textList,Check.isChinese(keyWords)));
 		sum.setTextSize(textList.size());
 		sum.setTextList(textList);
 		sum.setSummary(summary);

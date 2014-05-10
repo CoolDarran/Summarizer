@@ -1,6 +1,5 @@
 package com.scutdm.summary.helper;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;

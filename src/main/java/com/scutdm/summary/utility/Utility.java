@@ -2,6 +2,7 @@ package com.scutdm.summary.utility;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import com.scutdm.summary.action.SummaryResult;
 
@@ -40,8 +41,8 @@ public class Utility {
 		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss:SS");
 		sdf.setTimeZone(new java.util.SimpleTimeZone(0, "UTC"));
 		
-		System.out.println("Read HTML Time Elapsed (HH:mm:ss:SS): " + sdf.format(new Date(sum.getReadHTMLTime())));
-		System.out.println("Text Extract Time Elapsed (HH:mm:ss:SS): " + sdf.format(new Date(sum.getTextExtractTime())));
+		System.out.println("Read Google RSS Time Elapsed (HH:mm:ss:SS): " + sdf.format(new Date(sum.getReadHTMLTime())));
+		System.out.println("Read HTML and Text Extract Time Elapsed (HH:mm:ss:SS): " + sdf.format(new Date(sum.getTextExtractTime())));
 		System.out.println("Summarizer Time Elapsed (HH:mm:ss:SS): " + sdf.format(new Date(sum.getSummarizerTime())));
 	}
 	
@@ -61,5 +62,39 @@ public class Utility {
 		if(count == ignoreUrls.length)
 			return true;
 		return false;
+	}
+	
+	/**
+	 * 计算文章平均长度
+	 * 
+	 * @param textList
+	 * @param isChinese
+	 * @return
+	 */
+	public static int txtAvgNum(List<String> textList, boolean isChinese) {
+		int count = 0;
+		if(!isChinese)
+			for(String text : textList){
+				count+= text.split("\\s+").length;
+			}
+		else
+			for(String text : textList){
+				for(int i = 0; i < text.length(); i++){
+					char tempStr = text.charAt(i);
+					if(tempStr>=19968&&tempStr<=64041)
+						count++;
+				}
+			}
+		return count/textList.size();
+	}
+	
+	/**
+	 * 设置网页访问代理
+	 */
+	public static void setProxy(){
+		// set goagent proxy
+		System.setProperty("http.proxySet", "true");
+		System.setProperty("http.proxyHost", "127.0.0.1");
+		System.setProperty("http.proxyPort", "8087");
 	}
 }

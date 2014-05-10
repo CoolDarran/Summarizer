@@ -2,10 +2,16 @@ package com.scutdm.summary.extract;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,6 +21,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.http.client.HttpClient;
 import org.ictclas4j.utility.GFString;
 
 import com.wrap.chinsummarizer.preprocess.Utility;
@@ -51,24 +58,24 @@ public class ReadHTML {
 	
 	public static List<String> pExtractText(List<String> urls, String keyWords) {
 		htmlContents = new ArrayList<String>();
-		int size = urls.size()/5;
+		int splitSize = (int) Math.floor(urls.size()/3.0);
 		synchronized(htmlContents){
-			Thread t1 = new Thread(new runExtract(urls.subList(0, size),keyWords));
-			Thread t2 = new Thread(new runExtract(urls.subList(size, 2*size),keyWords));
-			Thread t3 = new Thread(new runExtract(urls.subList(2*size, 3*size),keyWords));
-			Thread t4 = new Thread(new runExtract(urls.subList(3*size, 4*size),keyWords));
-			Thread t5 = new Thread(new runExtract(urls.subList(4*size, urls.size()),keyWords));
+			Thread t1 = new Thread(new runExtract(urls.subList(0, splitSize),keyWords));
+			Thread t2 = new Thread(new runExtract(urls.subList(splitSize, 2*splitSize),keyWords));
+			Thread t3 = new Thread(new runExtract(urls.subList(2*splitSize, urls.size()),keyWords));
+//			Thread t4 = new Thread(new runExtract(urls.subList(3*splitSize, 4*splitSize),keyWords));
+//			Thread t5 = new Thread(new runExtract(urls.subList(4*splitSize, urls.size()),keyWords));
 			t1.start();
 			t2.start();
 			t3.start();
-			t4.start();
-			t5.start();
+//			t4.start();
+//			t5.start();
 			try {
 				t1.join();
 				t2.join();
 				t3.join();
-				t4.join();
-				t5.join();
+//				t4.join();
+//				t5.join();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -148,7 +155,7 @@ public class ReadHTML {
 	}
 	
 	/**
-	 * 
+	 * 多线程 读取HTML并抽取正文
 	 * @author danran
 	 * Created on 2014年5月8日
 	 */
@@ -163,6 +170,6 @@ public class ReadHTML {
 				htmlContents.add(GFString.getEncodedString(contents.getBytes(),"gb2312"));
 			}
 		}
-		
 	}
+	
 }

@@ -54,7 +54,6 @@ public class RSSFeedParser {
 		try{
 			reader = new XmlReader(url);
 			SyndFeed feeds = new SyndFeedInput().build(reader);
-//			System.out.println("Feed Title: " + feeds.getTitle());
 			
 			// feed header
 			feed = new Feed(feeds.getTitle(), feeds.getLink(), feeds.getDescription(), feeds.getLanguage(),

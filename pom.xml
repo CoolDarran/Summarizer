@@ -127,6 +127,31 @@
       	<artifactId>jargs</artifactId>
      	<version>1.0</version>
     </dependency>	
+    
+    <!-- httpComponents -->
+    <dependency>
+  		<groupId>org.apache.httpcomponents</groupId>
+  		<artifactId>httpclient</artifactId>
+  		<version>4.3.3</version>
+	</dependency>
+	
+	<dependency>
+  		<groupId>org.apache.httpcomponents</groupId>
+  		<artifactId>httpclient-cache</artifactId>
+  		<version>4.3.3</version>
+	</dependency>
+	
+	<dependency>
+  		<groupId>org.apache.httpcomponents</groupId>
+  		<artifactId>httpmime</artifactId>
+  		<version>4.3.3</version>
+	</dependency>
+
+	<dependency>
+  		<groupId>org.apache.httpcomponents</groupId>
+  		<artifactId>fluent-hc</artifactId>
+  		<version>4.3.3</version>
+	</dependency>
 	        	
   </dependencies>
   <build>

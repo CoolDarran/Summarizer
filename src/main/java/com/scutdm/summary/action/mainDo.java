@@ -8,10 +8,10 @@ import java.io.FileWriter;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 import com.scutdm.summary.extract.Check;
 import com.scutdm.summary.helper.SearchHelper;
+import com.scutdm.summary.utility.Utility;
 
 import edu.mit.jwi.Dictionary;
 import edu.mit.jwi.IDictionary;
@@ -66,7 +66,7 @@ public class mainDo{
 
 				long endTime = System.currentTimeMillis();
 				
-				sum.setAvgNum(txtAvgNum(sum.getTextList(),Check.isChinese(keyWord)));
+				sum.setAvgNum(Utility.txtAvgNum(sum.getTextList(),Check.isChinese(keyWord)));
 				Date date = new Date(endTime - startTime);
 				SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss:SS");
 				sdf.setTimeZone(new java.util.SimpleTimeZone(0, "UTC"));
@@ -86,23 +86,6 @@ public class mainDo{
 			}
 		}
 		out.println("All Ended....");
-	}
-	
-	private static int txtAvgNum(List<String> textList, boolean isChinese) {
-		int count = 0;
-		if(!isChinese)
-			for(String text : textList){
-				count+= text.split("\\s+").length;
-			}
-		else
-			for(String text : textList){
-				for(int i = 0; i < text.length(); i++){
-					char tempStr = text.charAt(i);
-					if(tempStr>=19968&&tempStr<=64041)
-						count++;
-				}
-			}
-		return count/textList.size();
 	}	
 	
 }
