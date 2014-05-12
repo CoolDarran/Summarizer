@@ -20,14 +20,7 @@
   </repositories>
   
   <dependencies>
-  
-  	<dependency>
-		<groupId>com.scutdm</groupId>
-		<artifactId>engsummary</artifactId>
-		<version>1.0</version>
-		<scope>compile</scope>
-	</dependency>
-  
+   
     <dependency>
 		<groupId>junit</groupId>
 		<artifactId>junit</artifactId>
