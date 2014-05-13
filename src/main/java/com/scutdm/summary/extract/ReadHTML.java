@@ -24,7 +24,6 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.ictclas4j.utility.GFString;
 
 import com.scutdm.summary.preprocess.CUtility;
 import com.scutdm.summary.utility.CommonUtility;
@@ -160,24 +159,24 @@ public class ReadHTML {
 	
 	public static List<String> pExtractText(List<String> urls, String keyWords) {
 		texts = new ArrayList<String>();
-		int splitSize = (int) Math.floor(urls.size()/3.0);
+		int splitSize = (int) Math.floor(urls.size()/5.0);
 		synchronized(texts){
 			Thread t1 = new Thread(new runExtract(urls.subList(0, splitSize),keyWords));
 			Thread t2 = new Thread(new runExtract(urls.subList(splitSize, 2*splitSize),keyWords));
-			Thread t3 = new Thread(new runExtract(urls.subList(2*splitSize, urls.size()),keyWords));
-//			Thread t4 = new Thread(new runExtract(urls.subList(3*splitSize, 4*splitSize),keyWords));
-//			Thread t5 = new Thread(new runExtract(urls.subList(4*splitSize, urls.size()),keyWords));
+			Thread t3 = new Thread(new runExtract(urls.subList(2*splitSize, 3*splitSize),keyWords));
+			Thread t4 = new Thread(new runExtract(urls.subList(3*splitSize, 4*splitSize),keyWords));
+			Thread t5 = new Thread(new runExtract(urls.subList(4*splitSize, urls.size()),keyWords));
 			t1.start();
 			t2.start();
 			t3.start();
-//			t4.start();
-//			t5.start();
+			t4.start();
+			t5.start();
 			try {
 				t1.join();
 				t2.join();
 				t3.join();
-//				t4.join();
-//				t5.join();
+				t4.join();
+				t5.join();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

@@ -45,10 +45,10 @@ public class SearchHelper {
 		for (FeedMessage message : feed.getMessages()) {
 			String url = message.getLink();
 			// 去除访问不到、抽取不到正以及不能在1s内访问的网站
-			if(CommonUtility.accessableUrls(url)){
+//			if(CommonUtility.accessableUrls(url)){
 				urls.add(url);
 				titleAndUrls.add(message.getTitle() + "," + message.getLink());
-			}
+//			}
 			if(urls.size() >= totalSize)
 				break;
 		}		
