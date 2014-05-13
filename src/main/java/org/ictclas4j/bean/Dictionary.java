@@ -461,7 +461,7 @@ public class Dictionary {
 	protected int findInModifyTable(int index, String res, int handle) {
 		int result = -1;
 
-		if (mts != null && mts.size() > index) {
+		if (mts != null && mts.size() > index && index!=-1) {
 			ArrayList<WordItem> wis = mts.get(index).getWords();
 			if (res != null && wis != null) {
 				int i = 0;
@@ -583,7 +583,7 @@ public class Dictionary {
 					// 至少有一个
 					ArrayList<WordItem> wis = wts.get(pw.getIndex()).getWords();
 					if (wis == null) return null;
-					
+					if(found>=wis.size()) return null;
 					WordItem wi = wis.get(found);
 					String wordRet = firstChar + wi.getWord();					
 					return new WordItem(wordRet,wi.getLen(),wi.getHandle(),wi.getFreq());

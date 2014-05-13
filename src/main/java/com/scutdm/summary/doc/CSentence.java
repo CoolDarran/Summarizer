@@ -39,9 +39,11 @@ public class CSentence{
 		
 		// 分词
 		String tagged = CUtility.ICTCLAS(sentence);
+		String[] words = tagged.split(" ");
+		
+//		LinkedList<String> words = CUtility.IKAnalysis(sentence);
 		
 		List<CWord> wordList = new LinkedList<CWord>();
-		String[] words = tagged.split(" ");
 	    for(String word:words){
 	    	if(word.split("/").length<2)
 	    		continue;

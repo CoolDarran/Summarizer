@@ -57,6 +57,7 @@ public class SummarizerHelper {
 	public String passText(boolean chinese, String keyWords, List<String> textList, JWS ws, IDictionary dict) {
 		String summaryContent = "";
 		if(chinese){
+			System.setProperty("file.encoding","gb2312");
 			// for chinese text
 			summaryContent = chinSummary(textList, keyWords);
 		}else{

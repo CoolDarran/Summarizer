@@ -58,7 +58,7 @@ public class SearchHelper {
 		long textExtractS = System.currentTimeMillis();
 		// get the text of these 10 news urls
 		System.out.println("Start extractor for " + keyWords);
-		textList.addAll(ReadHTML.extractText(urls));
+		textList.addAll(ReadHTML.pExtractText(urls, keyWords));
 		System.out.println("End extractor for " + keyWords);
 		long textExtractE = System.currentTimeMillis();
 		sum.setTextExtractTime(textExtractE - textExtractS);

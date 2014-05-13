@@ -67,7 +67,7 @@ public class DebugUtil {
 				}
 				html.append("</table>");
 				html.append("</body></html>");
-				writeTxtFile("output\\postag.html", html.toString(), false);
+				writeTxtFile("./output/postag.html", html.toString(), true);
 			} catch (IOException e) {
 			}
 
@@ -120,8 +120,7 @@ public class DebugUtil {
 				}
 
 				String[] msgs = txt.split("\n");
-				fw = new FileWriter(file, isAppend);
-				out = new PrintWriter(fw);
+				out = new PrintWriter(file,"gb2312");
 				for (int i = 0; i < msgs.length; i++) {
 					out.println(msgs[i]);
 				}

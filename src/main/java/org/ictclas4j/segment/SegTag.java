@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+
 import org.ictclas4j.bean.Atom;
 import org.ictclas4j.bean.Dictionary;
 import org.ictclas4j.bean.MidResult;
@@ -25,13 +26,13 @@ public class SegTag {
 
 	public SegTag(int segPathCount) {
 		this.segPathCount = segPathCount;
-		coreDict = new Dictionary("data\\coreDict.dct");
+		coreDict = new Dictionary("data/coreDict.dct");
 
-		bigramDict = new Dictionary("data\\bigramDict.dct");
-		personTagger = new PosTagger(Utility.TAG_TYPE.TT_PERSON, "data\\nr", coreDict);
-		transPersonTagger = new PosTagger(Utility.TAG_TYPE.TT_TRANS_PERSON, "data\\tr", coreDict);
-		placeTagger = new PosTagger(Utility.TAG_TYPE.TT_TRANS_PERSON, "data\\ns", coreDict);
-		lexTagger = new PosTagger(Utility.TAG_TYPE.TT_NORMAL, "data\\lexical", coreDict);
+		bigramDict = new Dictionary("data/bigramDict.dct");
+		personTagger = new PosTagger(Utility.TAG_TYPE.TT_PERSON, "data/nr", coreDict);
+		transPersonTagger = new PosTagger(Utility.TAG_TYPE.TT_TRANS_PERSON, "data/tr", coreDict);
+		placeTagger = new PosTagger(Utility.TAG_TYPE.TT_TRANS_PERSON, "data/ns", coreDict);
+		lexTagger = new PosTagger(Utility.TAG_TYPE.TT_NORMAL, "data/lexical", coreDict);
 	}
 
 	public SegResult split(String src) {
@@ -187,24 +188,28 @@ public class SegTag {
 	
 	public static void main(String[] args) {
 		SegTag segTag = new SegTag(1);	
+		SegResult seg_res=segTag.split("习近平代表中国政府和人民，对大会的举行表示祝贺。习近平表示，汗血马是享誉世界的优良马种，是土库曼斯坦民族的骄傲和荣耀。中国人民喜爱汗血马，将之誉为“天马”。早在2000多年前，天马就穿越古老的丝绸之路，不远万里来到中国。中土建交以来，土方先后两次将汗血马作为国礼赠送中方，增进了两国人民感情。汗血马已经成为中土友谊的使者和两国人民世代友好的见证。");
+		System.out.println(seg_res.getFinalResult());
+
 		
-		BufferedReader reader= new BufferedReader(new InputStreamReader(System.in));
-		String line=null;
-		try {
-			while ((line=reader.readLine())!=null) {
-				try { 
-					SegResult seg_res=segTag.split(line);
-					System.out.println(seg_res.getFinalResult());
-				} catch (Throwable t) {
-					t.printStackTrace();					
-				}
-			}
-		} catch (IOException e) {			
-			e.printStackTrace();
-		}						
+//		BufferedReader reader= new BufferedReader(new InputStreamReader(System.in));
+//		String line=null;
+//		try {
+//			while ((line=reader.readLine())!=null) {
+//				try { 
+//					SegResult seg_res=segTag.split(line);
+//					System.out.println(seg_res.getFinalResult());
+//				} catch (Throwable t) {
+//					t.printStackTrace();					
+//				}
+//			}
+//		} catch (IOException e) {			
+//			e.printStackTrace();
+//		}						
 	}
 	
 	private static void println2Err(String str) {
 		//System.err.println(str);		
 	}
+
 }

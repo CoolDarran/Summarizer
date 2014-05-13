@@ -92,7 +92,7 @@ public class PosTagger {
 		if (sns != null && unknownDict != null && context != null) {
 			posTag(sns);
 			getBestPos(sns);
-			//DebugUtil.outputPostag(sns);
+//			DebugUtil.outputPostag(sns);
 			switch (tagType) {
 			case TT_NORMAL:
 				for (SegNode sn : sns) {
@@ -502,7 +502,7 @@ public class PosTagger {
 							SegNode sn = sns.get(nPos);
 							if (sn.getPos() < 4
 									&& unknownDict.getFreq(sn.getWord(), sn.getPos()) < Utility.LITTLE_FREQUENCY)
-								personName += sn.getWord();
+								personName += sn.getSrcWord();
 							nPos += 1;
 						}
 						if ("CDCD".equals(patterns[k])) {
