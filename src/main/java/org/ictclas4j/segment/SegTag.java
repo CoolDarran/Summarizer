@@ -26,13 +26,13 @@ public class SegTag {
 
 	public SegTag(int segPathCount) {
 		this.segPathCount = segPathCount;
-		coreDict = new Dictionary("data/coreDict.dct");
+		coreDict = new Dictionary("Data/coreDict.dct");
 
-		bigramDict = new Dictionary("data/bigramDict.dct");
-		personTagger = new PosTagger(Utility.TAG_TYPE.TT_PERSON, "data/nr", coreDict);
-		transPersonTagger = new PosTagger(Utility.TAG_TYPE.TT_TRANS_PERSON, "data/tr", coreDict);
-		placeTagger = new PosTagger(Utility.TAG_TYPE.TT_TRANS_PERSON, "data/ns", coreDict);
-		lexTagger = new PosTagger(Utility.TAG_TYPE.TT_NORMAL, "data/lexical", coreDict);
+		bigramDict = new Dictionary("Data/bigramDict.dct");
+		personTagger = new PosTagger(Utility.TAG_TYPE.TT_PERSON, "Data/nr", coreDict);
+		transPersonTagger = new PosTagger(Utility.TAG_TYPE.TT_TRANS_PERSON, "Data/tr", coreDict);
+		placeTagger = new PosTagger(Utility.TAG_TYPE.TT_TRANS_PERSON, "Data/ns", coreDict);
+		lexTagger = new PosTagger(Utility.TAG_TYPE.TT_NORMAL, "Data/lexical", coreDict);
 	}
 
 	public SegResult split(String src) {
