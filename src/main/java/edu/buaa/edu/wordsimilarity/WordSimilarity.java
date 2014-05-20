@@ -4,6 +4,7 @@
 package edu.buaa.edu.wordsimilarity;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * 该类为此项目的主要文件，提供计算词语相似度的一些基本公式，都为静态。
@@ -23,6 +25,16 @@ import java.util.Map;
 public class WordSimilarity {
     // 词库中所有的具体词，或者义原
     private static Map<String, List<Word>> ALLWORDS = new HashMap<String, List<Word>>();
+    
+    /**
+     * 哈工大同义词林中的所有词语。key类别号，value是这个类别下的所有词语组成的list； list中的所有词都为同义词或者相关的词语。
+     */
+    private static Map<String, List<String>> CILIN = new HashMap<String, List<String>>();
+    /**
+     * 哈工大同义词林中的所有词语。key为词语，value为类别号
+     */
+    private static Map<String, String> ALLWORDS_IN_CILIN = new HashMap<String, String>();
+    
     /**
      * sim(p1,p2) = alpha/(d+alpha)
      */
@@ -73,12 +85,48 @@ public class WordSimilarity {
      * 知网中的特殊符号，虚词，或具体词
      */
     private static String SPECIAL_SYMBOL = "{";
+    
     /**
      * 默认加载文件
      */
     static {
         loadGlossary();
+        loadCiLin();
     }
+    
+    /**
+     * load the file, dict/哈工大信息检索研究室同义词词林扩展版.txt.
+     */
+    private static void loadCiLin() {
+        String line = null;
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(
+            		new InputStreamReader(
+            				new FileInputStream(new File("dict/CILIN.txt")),"gb2312"));
+            line = reader.readLine();
+            while (line != null) {
+                String[] strs = line.split(" ");
+                String category = strs[0];
+                List<String> list = new ArrayList<String>();
+                for (int i = 1; i < strs.length; i++) {
+                    ALLWORDS_IN_CILIN.put(strs[i], category);
+                    list.add(strs[i]);
+                }
+                CILIN.put(category, list);
+                line = reader.readLine();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                reader.close();
+            } catch (IOException e) {
+            	e.printStackTrace();
+            }
+        }
+    }
+
 
     /**
      * 加载 glossay.dat 文件
@@ -239,6 +287,71 @@ public class WordSimilarity {
         }
         return 0;
     }
+    
+    
+    /**
+     * caculate the word similarity using CiLin.
+     * @param word1
+     * @param word2
+     * @return
+     */
+    public static double simWordCiLin(String word1,String word2){
+        if(ALLWORDS_IN_CILIN.containsKey(word1)&&ALLWORDS_IN_CILIN.containsKey(word2)){
+            String category1 = ALLWORDS_IN_CILIN.get(word1);
+            String category2 = ALLWORDS_IN_CILIN.get(word2);
+            return simCategory(category1,category2);
+        }
+        if(!ALLWORDS_IN_CILIN.containsKey(word1)){
+        	
+        }
+        if(!ALLWORDS_IN_CILIN.containsKey(word2)){
+        	
+        }
+        return 0.0;
+    }
+    /**
+     * 计算两个类别直接的距离，在词林中，我们将词语的相似度，等同于词语所属类别的相似度.<br/>
+     * category：Aa01B03#<br/>
+     * 第一位：大写字母，大类,第一级<br/>
+     * 第二位：小写字母，中类,第二级<br/>
+     * 第三、四位：数字，小类，第三级<br/>
+     * 第五位：大写字母，词群，第四级<br/>
+     * 第六、七位：数字，原子词群，第五级<br/>
+     * 第八位：“=#@”，“=”代表相等，同义；“#”代表不等，同类；“@”代表自我封闭，独立，在词典既没有同义词，也没有相关词<br/>
+     * @param category1
+     * @param category2
+     * @return
+     */
+    public static double simCategory(String category1,String category2){
+        String big1 = category1.substring(0,1);
+        String middle1 = category1.substring(1,2);
+        String small1 = category1.substring(2,4);
+        String wordGroup1 = category1.substring(4,5);
+        String UnitWordGroup1 = category1.substring(5,7);
+        String big2 = category2.substring(0,1);
+        String middle2 = category2.substring(1,2);
+        String small2 = category2.substring(2,4);
+        String wordGroup2 = category2.substring(4,5);
+        String UnitWordGroup2 = category2.substring(5,7);
+        if(!big1.equals(big2)){
+            //默认使用最远距离
+            return 0;
+        }
+        if(!middle1.equals(middle2)){
+            return 0.2;
+        }
+        if(!small1.equals(small2)){
+            return 0.4;
+        }
+        if(!wordGroup1.equals(wordGroup2)){
+            return 0.6;
+        }
+        if(!UnitWordGroup1.equals(UnitWordGroup2)){
+            return 0.8;
+        }
+        return 1;
+    }
+    
 
     /**
      * 计算两个词语的相似度
@@ -493,8 +606,8 @@ public class WordSimilarity {
      */
     public static void main(String[] args) throws Exception {
         // TODO Auto-generated method stub
-        BufferedReader reader = new BufferedReader(new FileReader(
-                "dict/glossary.dat"));
+//        BufferedReader reader = new BufferedReader(new FileReader(
+//                "dict/glossary.dat"));
 //        Set<String> set = new HashSet<String>();
 /*        String line = reader.readLine();
         while (line != null) {
@@ -512,7 +625,12 @@ public class WordSimilarity {
 //        for (String name : set) {
 //            System.out.println(name);
 //        }
-        double simval=simWord("司机","游客");
+        double simval=simWord("骄傲","自豪");
         System.out.println("\n" + simval);
+        
+        double sim = simWordCiLin("骄傲","自豪");
+        System.out.println("\n" + sim);
+        
     }
+
 }
